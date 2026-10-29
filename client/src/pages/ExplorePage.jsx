@@ -250,12 +250,12 @@ export default function ExplorePage() {
 
       {/* Backend Offline / Notice Banner */}
       {fetchError && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs sm:text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
             <div>
               <p className="font-semibold">Notice: {fetchError}</p>
-              <p className="text-xs text-amber-300/80 mt-0.5">
+              <p className="text-xs text-amber-700 dark:text-amber-300/80 mt-0.5">
                 Displaying offline demonstration catalog so your exploration remains uninterrupted.
               </p>
             </div>

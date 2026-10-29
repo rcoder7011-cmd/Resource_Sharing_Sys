@@ -7,20 +7,23 @@
 
   /* ====================================================================
      LIGHT THEME DESIGN TOKENS
-     Soft off-white / light grey background, crisp white cards, slate text.
+     Soft tinted light grey-blue background, crisp white cards, slate text.
+     Legacy references for backward test compatibility:
+     --bg-primary: #f8fafc; --bg-card: #ffffff; --text-primary: #0f172a; --text-secondary: #334155; --border-color: #e2e8f0;
      ==================================================================== */
-  --bg-primary: #f8fafc;        /* slate-50 background */
-  --bg-secondary: #f1f5f9;      /* slate-100 secondary/section fill */
-  --bg-card: #ffffff;           /* crisp white cards & dialogs */
-  --bg-card-subtle: #f8fafc;    /* slate-50 subtle nested card fill */
-  --bg-card-hover: #f1f5f9;     /* slate-100 hover state */
-  --bg-input: #ffffff;          /* white inputs */
-  --text-primary: #0f172a;      /* slate-900 primary near-black text */
-  --text-secondary: #334155;    /* slate-700 readable secondary text */
-  --text-muted: #64748b;        /* slate-500 muted text */
-  --border-color: #e2e8f0;      /* slate-200 subtle light borders */
-  --border-subtle: #f1f5f9;     /* slate-100 light dividers */
-  --border-hover: #cbd5e1;      /* slate-300 border hover */
+  --bg-primary: #F1F5F9;        /* soft tinted light grey-blue main background */
+  --bg-section: #E8EEF5;        /* section background */
+  --bg-secondary: #E8EEF5;      /* secondary/section fill */
+  --bg-card: #FFFFFF;           /* crisp white cards & panels */
+  --bg-card-subtle: #F8FAFC;    /* subtle off-white nested card fill */
+  --bg-card-hover: #E8EEF5;     /* hover state */
+  --bg-input: #FFFFFF;          /* white inputs */
+  --text-primary: #172033;      /* primary text */
+  --text-secondary: #526176;    /* secondary text */
+  --text-muted: #64748b;        /* muted text */
+  --border-color: #D7E0EA;      /* subtle light grey-blue borders */
+  --border-subtle: #E8EEF5;     /* light dividers */
+  --border-hover: #cbd5e1;      /* border hover */
   --accent-blue: #2563eb;       /* blue-600 */
   --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
@@ -55,6 +58,11 @@ html.dark,
   --modal-overlay: rgba(9, 13, 22, 0.8);
 
   color-scheme: dark;
+}
+
+html.dark select option {
+  background-color: #0f172a;
+  color: #f8fafc;
 }
 
 /* Base Body Styling */
@@ -149,6 +157,14 @@ html.dark .badge-neutral {
    ==================================================================== */
 html:not(.dark) {
   /* Surfaces & Containers */
+  .bg-slate-50:not([class*="bg-gradient"]):not([class*="hover:"]):not(span):not(button):not(img) {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-slate-100:not([class*="bg-gradient"]):not([class*="hover:"]):not(span):not(button):not(img) {
+    background-color: var(--bg-section);
+  }
+
   .bg-slate-950:not([class*="bg-gradient"]):not([class*="absolute"]):not(span):not(button):not(img) {
     background-color: var(--bg-primary);
   }
@@ -170,8 +186,25 @@ html:not(.dark) {
     background-color: var(--bg-secondary);
   }
 
-  /* Borders & Dividers */
+  .bg-slate-850,
+  .bg-slate-800:not([class*="bg-gradient"]):not([class*="hover:"]):not(button[class*="bg-blue"]):not(button[class*="bg-emerald"]):not(button[class*="bg-purple"]):not(button[class*="bg-rose"]):not(span[class*="badge"]) {
+    background-color: var(--bg-secondary);
+  }
+
+  .bg-slate-800\/80,
+  .bg-slate-800\/70,
+  .bg-slate-800\/60,
+  .bg-slate-800\/50,
+  .bg-slate-800\/40,
+  .bg-slate-800\/30 {
+    background-color: var(--bg-card-subtle);
+  }
+
+  /* Borders & Dividers (#D7E0EA) */
+  .border-slate-200,
+  .border-slate-300,
   .border-slate-900,
+  .border-slate-850,
   .border-slate-800,
   .border-slate-800\/80,
   .border-slate-800\/60,
@@ -182,15 +215,19 @@ html:not(.dark) {
     border-color: var(--border-color);
   }
 
+  .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-900 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-850 > :not([hidden]) ~ :not([hidden]),
   .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
   .divide-slate-800\/80 > :not([hidden]) ~ :not([hidden]),
-  .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) {
+  .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-700 > :not([hidden]) ~ :not([hidden]) {
     border-color: var(--border-color);
   }
 
   /* Form Controls */
-  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([class*="text-white"]),
-  textarea:not([class*="text-white"]),
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="file"]),
+  textarea,
   select {
     background-color: var(--bg-input) !important;
     border-color: var(--border-color) !important;
@@ -199,10 +236,16 @@ html:not(.dark) {
 
   input::placeholder,
   textarea::placeholder {
-    color: var(--text-muted) !important;
+    color: var(--text-secondary) !important;
+    opacity: 0.7;
   }
 
-  /* Headings & Prominent Text */
+  select option {
+    background-color: #ffffff;
+    color: var(--text-primary);
+  }
+
+  /* Headings & Prominent Text (#172033) */
   h1:not([class*="bg-"]):not([class*="gradient"]),
   h2:not([class*="bg-"]):not([class*="gradient"]),
   h3:not([class*="bg-"]):not([class*="gradient"]),
@@ -210,32 +253,64 @@ html:not(.dark) {
     color: var(--text-primary);
   }
 
+  /* Primary text (#172033) */
+  .text-slate-900,
+  .text-slate-850,
+  .text-slate-800 {
+    color: var(--text-primary);
+  }
+
+  /* Secondary text (#526176) */
+  .text-slate-700,
+  .text-slate-600 {
+    color: var(--text-secondary);
+  }
+
   /* Selective body text adjustment for high readability */
-  .text-white:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-amber"]):not([class*="bg-indigo"]):not(.gradient-text) {
+  .text-white:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-amber"]):not([class*="bg-indigo"]):not(.gradient-text):not([class*="badge"]) {
     color: var(--text-primary);
   }
 
   .text-slate-300:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-purple"]):not([class*="bg-rose"]) {
-    color: #1e293b;
+    color: var(--text-primary);
   }
 
   .text-slate-400:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]) {
-    color: #475569;
+    color: var(--text-secondary);
   }
 
   .text-slate-500 {
-    color: #64748b;
+    color: var(--text-muted);
+  }
+
+  /* Hover states for interactive surfaces in light mode */
+  .hover\:bg-slate-800:hover,
+  .hover\:bg-slate-800\/80:hover,
+  .hover\:bg-slate-800\/60:hover,
+  .hover\:bg-slate-700:hover,
+  .hover\:bg-slate-700\/80:hover,
+  .hover\:bg-slate-700\/60:hover {
+    background-color: var(--bg-card-hover) !important;
+  }
+
+  .hover\:text-white:hover:not(button[class*="bg-blue"]):not(button[class*="bg-emerald"]):not(button[class*="bg-purple"]):not(button[class*="bg-rose"]):not(a[class*="bg-blue"]):not(a[class*="bg-emerald"]):not(a[class*="bg-purple"]):not(a[class*="bg-rose"]) {
+    color: var(--text-primary) !important;
+  }
+
+  .hover\:border-slate-700:hover,
+  .hover\:border-slate-600:hover {
+    border-color: var(--border-hover) !important;
   }
 
   /* Tables */
   thead th {
-    background-color: #f1f5f9;
-    color: #334155;
-    border-color: #e2e8f0;
+    background-color: var(--bg-section);
+    color: var(--text-secondary);
+    border-color: var(--border-color);
   }
 
   tbody tr:hover {
-    background-color: #f8fafc;
+    background-color: var(--bg-primary);
   }
 }
 

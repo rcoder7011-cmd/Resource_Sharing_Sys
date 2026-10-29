@@ -61,7 +61,7 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section id="how-it-works" className="py-20 bg-slate-50 dark:bg-slate-900/40 border-y border-slate-200 dark:border-slate-900 transition-colors duration-200">
+    <section id="how-it-works" className="py-20 bg-[#E8EEF5] dark:bg-slate-900/40 border-y border-[#D7E0EA] dark:border-slate-900 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">

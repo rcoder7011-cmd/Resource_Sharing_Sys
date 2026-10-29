@@ -707,14 +707,14 @@ export default function DashboardPage() {
   return (
     <div className="py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       {/* Header Profile Banner */}
-      <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-xl">
+      <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 bg-gradient-to-r from-blue-50/80 via-white to-slate-100/60 dark:from-slate-900 dark:via-slate-900 dark:to-blue-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 shadow-sm dark:shadow-xl">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shadow-md">
+          <div className="w-16 h-16 rounded-2xl bg-blue-600/10 dark:bg-blue-600/20 border border-blue-500/20 dark:border-blue-500/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
             <User className="w-8 h-8" />
           </div>
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {user?.name || 'Institutional Member'}
               </h1>
               <Badge
@@ -724,8 +724,8 @@ export default function DashboardPage() {
                 {user?.role === 'admin' ? 'Administrator' : 'Standard User'}
               </Badge>
             </div>
-            <p className="text-xs sm:text-sm text-slate-400 flex items-center gap-2">
-              <Mail className="w-3.5 h-3.5 text-slate-500" />
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               <span>{user?.email}</span>
             </p>
           </div>
@@ -786,21 +786,21 @@ export default function DashboardPage() {
         {/* Left Column (2 cols): Listings & Bookings Management */}
         <div className="lg:col-span-2 space-y-6">
           {/* Segmented Navigation Bar */}
-          <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs sm:text-sm font-medium">
+          <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-medium">
             <button
               type="button"
               onClick={() => setActiveTab('listings')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
                 activeTab === 'listings'
                   ? 'bg-blue-600 text-white font-semibold shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/60'
               }`}
             >
               <Package className="w-4 h-4" />
               <span>My Listings</span>
               <span
                 className={`text-[11px] px-2 py-0.2 rounded-full ${
-                  activeTab === 'listings' ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-400'
+                  activeTab === 'listings' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
                 {myListings.length}
@@ -813,14 +813,14 @@ export default function DashboardPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
                 activeTab === 'my-bookings'
                   ? 'bg-blue-600 text-white font-semibold shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/60'
               }`}
             >
               <Calendar className="w-4 h-4" />
               <span>My Bookings</span>
               <span
                 className={`text-[11px] px-2 py-0.2 rounded-full ${
-                  activeTab === 'my-bookings' ? 'bg-blue-700 text-white' : 'bg-slate-800 text-slate-400'
+                  activeTab === 'my-bookings' ? 'bg-blue-700 text-white' : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
                 }`}
               >
                 {myBookings.length}
@@ -833,7 +833,7 @@ export default function DashboardPage() {
               className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
                 activeTab === 'incoming-requests'
                   ? 'bg-blue-600 text-white font-semibold shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-800/60'
               }`}
             >
               <Inbox className="w-4 h-4" />
@@ -847,7 +847,7 @@ export default function DashboardPage() {
                   className={`text-[11px] px-2 py-0.2 rounded-full ${
                     activeTab === 'incoming-requests'
                       ? 'bg-blue-700 text-white'
-                      : 'bg-slate-800 text-slate-400'
+                      : 'bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
                   }`}
                 >
                   {ownerBookings.length}

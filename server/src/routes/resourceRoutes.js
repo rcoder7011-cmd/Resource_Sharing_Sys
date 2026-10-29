@@ -8,6 +8,8 @@ const {
   createResource,
   updateResource,
   deleteResource,
+  uploadResourceImage,
+  serveResourceImage,
 } = require('../controllers/resourceController');
 const { matchNeeds } = require('../controllers/recommendationController');
 const { protect, optionalProtect } = require('../middleware/authMiddleware');
@@ -15,6 +17,12 @@ const { protect, optionalProtect } = require('../middleware/authMiddleware');
 // Public catalog routes
 router.get('/', getAllResources);
 router.post('/match', optionalProtect, matchNeeds);
+
+// Public resource image serving (Must be registered BEFORE /:id route)
+router.get('/images/:filename', serveResourceImage);
+
+// Authenticated image upload for resource listings
+router.post('/upload-image', protect, uploadResourceImage);
 
 // Authenticated user's personal listings & utilization (Must be registered BEFORE /:id route)
 router.get('/mine', protect, getMyResources);

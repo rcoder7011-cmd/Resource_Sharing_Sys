@@ -14,14 +14,11 @@ function getInitialTheme() {
     if (saved === 'light' || saved === 'dark') {
       return saved;
     }
-    // Fall back to system preference
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      return 'dark';
-    }
-    return 'light';
+    // Default to dark mode when no theme preference is saved
+    return 'dark';
   } catch (err) {
     // LocalStorage inaccessible (e.g. strict private mode)
-    return 'light';
+    return 'dark';
   }
 }
 

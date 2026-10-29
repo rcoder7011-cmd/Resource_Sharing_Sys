@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import Button from '../components/common/Button';
-import { createResource } from '../services/resourceService';
+import { createResource, uploadResourceImage } from '../services/resourceService';
+import ImageUploadField from '../components/resources/ImageUploadField';
 import {
   CATEGORIES,
   LOCATIONS,
@@ -139,6 +140,20 @@ export default function CreateResourcePage() {
     setSubmitError('');
 
     try {
+      let finalImageUrl = formData.imageUrl.trim();
+
+      // If user selected an image file from device (data-URI), upload to backend storage
+      if (finalImageUrl.startsWith('data:image/')) {
+        try {
+          const uploadRes = await uploadResourceImage(finalImageUrl, token);
+          if (uploadRes?.data?.url) {
+            finalImageUrl = uploadRes.data.url;
+          }
+        } catch {
+          // If dedicated upload route fails, payload keeps data-URI and backend createResource saves it
+        }
+      }
+
       const payload = {
         title: formData.title.trim(),
         description: formData.description.trim(),
@@ -151,7 +166,7 @@ export default function CreateResourcePage() {
           building: formData.building.trim(),
           room: formData.room.trim(),
         },
-        images: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : undefined,
+        images: finalImageUrl ? [finalImageUrl] : undefined,
         availabilityStatus: formData.availabilityStatus,
         condition: formData.condition,
         quantity: parseInt(formData.quantity, 10),
@@ -177,16 +192,16 @@ export default function CreateResourcePage() {
   return (
     <div className="py-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
       {/* Top Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-5">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-5">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-400">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">
             <PackagePlus className="w-3.5 h-3.5" />
             <span>Listing Management</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
             List Equipment or Research Space
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400">
             Share underutilized lab apparatus, workshops, and facilities with verified campus peers.
           </p>
         </div>
@@ -200,17 +215,17 @@ export default function CreateResourcePage() {
       {submitError && (
         <div
           role="alert"
-          className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-sm flex items-start gap-3"
+          className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-sm flex items-start gap-3"
         >
-          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <AlertCircle className="w-5 h-5 text-rose-500 dark:text-rose-400 shrink-0 mt-0.5" />
           <div className="flex-1 leading-snug">{submitError}</div>
         </div>
       )}
 
       {/* Form Container */}
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-          <h2 className="text-base font-bold text-white tracking-tight pb-3 border-b border-slate-800/80">
+        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-xl">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight pb-3 border-b border-slate-200 dark:border-slate-800/80">
             1. Resource Identification & Description
           </h2>
 
@@ -219,7 +234,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="title"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Resource Title / Equipment Model *
               </label>
@@ -231,12 +246,12 @@ export default function CreateResourcePage() {
                 onChange={handleChange}
                 disabled={isSubmitting}
                 placeholder="e.g. Nikon Eclipse Ti2-E Inverted Fluorescence Microscope"
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                  fieldErrors.title ? 'border-rose-500/70' : 'border-slate-800 hover:border-slate-700'
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  fieldErrors.title ? 'border-rose-500/70' : 'border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
                 }`}
               />
               {fieldErrors.title && (
-                <p className="mt-1 text-xs text-rose-400">{fieldErrors.title}</p>
+                <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{fieldErrors.title}</p>
               )}
             </div>
 
@@ -245,7 +260,7 @@ export default function CreateResourcePage() {
               <div>
                 <label
                   htmlFor="category"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Primary Category *
                 </label>
@@ -255,7 +270,7 @@ export default function CreateResourcePage() {
                   value={formData.category}
                   onChange={handleCategoryChange}
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {categoryOptions.map((cat) => (
                     <option key={cat} value={cat}>
@@ -268,7 +283,7 @@ export default function CreateResourcePage() {
               <div>
                 <label
                   htmlFor="subcategory"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Subcategory
                 </label>
@@ -278,7 +293,7 @@ export default function CreateResourcePage() {
                   value={formData.subcategory}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {currentSubcategories.map((sub) => (
                     <option key={sub} value={sub}>
@@ -291,7 +306,7 @@ export default function CreateResourcePage() {
               <div>
                 <label
                   htmlFor="resourceType"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Resource Classification *
                 </label>
@@ -301,7 +316,7 @@ export default function CreateResourcePage() {
                   value={formData.resourceType}
                   onChange={handleChange}
                   disabled={isSubmitting}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="equipment">Specialized Equipment / Instrument / Item</option>
                   <option value="space">Facility / Dedicated Lab Space</option>
@@ -311,12 +326,12 @@ export default function CreateResourcePage() {
 
             {/* Optional Academic & Book Metadata (Rendered when category supports it) */}
             {showAcademicFields && (
-              <div className="p-4 sm:p-5 rounded-xl bg-slate-950/70 border border-blue-900/30 space-y-4">
-                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-400">
+              <div className="p-4 sm:p-5 rounded-xl bg-blue-50/60 dark:bg-slate-950/70 border border-blue-200 dark:border-blue-900/30 space-y-4">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
                   <BookOpen className="w-4 h-4" />
                   <span>Academic Course & Study Material Details (Optional)</span>
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Provide course, department, or publication details to help students and classmates discover this material accurately.
                 </p>
 
@@ -481,7 +496,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Comprehensive Description & Capabilities *
               </label>
@@ -493,20 +508,20 @@ export default function CreateResourcePage() {
                 onChange={handleChange}
                 disabled={isSubmitting}
                 placeholder="Detail optical specifications, operational voltage, supported protocols, and research use cases..."
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
-                  fieldErrors.description ? 'border-rose-500/70' : 'border-slate-800 hover:border-slate-700'
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  fieldErrors.description ? 'border-rose-500/70' : 'border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700'
                 }`}
               />
               {fieldErrors.description && (
-                <p className="mt-1 text-xs text-rose-400">{fieldErrors.description}</p>
+                <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{fieldErrors.description}</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Section 2: Location & Department */}
-        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-          <h2 className="text-base font-bold text-white tracking-tight pb-3 border-b border-slate-800/80">
+        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-xl">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight pb-3 border-b border-slate-200 dark:border-slate-800/80">
             2. Campus Location & Department
           </h2>
 
@@ -514,7 +529,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="campus"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Campus Location *
               </label>
@@ -524,7 +539,7 @@ export default function CreateResourcePage() {
                 value={formData.campus}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {campusOptions.map((camp) => (
                   <option key={camp} value={camp}>
@@ -537,7 +552,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="building"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Building
               </label>
@@ -549,14 +564,14 @@ export default function CreateResourcePage() {
                 onChange={handleChange}
                 disabled={isSubmitting}
                 placeholder="BioSciences Complex"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
 
             <div>
               <label
                 htmlFor="room"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Room / Bay Number
               </label>
@@ -568,15 +583,15 @@ export default function CreateResourcePage() {
                 onChange={handleChange}
                 disabled={isSubmitting}
                 placeholder="Room 304"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>
         </div>
 
         {/* Section 3: Availability, Condition & Media */}
-        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-6 shadow-xl">
-          <h2 className="text-base font-bold text-white tracking-tight pb-3 border-b border-slate-800/80">
+        <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm dark:shadow-xl">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight pb-3 border-b border-slate-200 dark:border-slate-800/80">
             3. Operational Status & Media
           </h2>
 
@@ -584,7 +599,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="availabilityStatus"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Availability Status
               </label>
@@ -594,7 +609,7 @@ export default function CreateResourcePage() {
                 value={formData.availabilityStatus}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="available">Available Now</option>
                 <option value="unavailable">Booking Required</option>
@@ -605,7 +620,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="condition"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Condition Rating
               </label>
@@ -615,7 +630,7 @@ export default function CreateResourcePage() {
                 value={formData.condition}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="new">New / Factory Calibrated</option>
                 <option value="good">Good / Fully Operational</option>
@@ -627,7 +642,7 @@ export default function CreateResourcePage() {
             <div>
               <label
                 htmlFor="quantity"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Quantity Available *
               </label>
@@ -640,54 +655,37 @@ export default function CreateResourcePage() {
                 value={formData.quantity}
                 onChange={handleChange}
                 disabled={isSubmitting}
-                className={`w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  fieldErrors.quantity ? 'border-rose-500/70' : 'border-slate-800'
+                className={`w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  fieldErrors.quantity ? 'border-rose-500/70' : 'border-slate-300 dark:border-slate-800'
                 }`}
               />
               {fieldErrors.quantity && (
-                <p className="mt-1 text-xs text-rose-400">{fieldErrors.quantity}</p>
+                <p className="mt-1 text-xs text-rose-500 dark:text-rose-400">{fieldErrors.quantity}</p>
               )}
             </div>
           </div>
 
-          {/* Image URL */}
+          {/* Image Upload from Computer */}
           <div>
-            <label
-              htmlFor="imageUrl"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
-            >
-              Image URL (Web Accessible Link)
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
-                <ImageIcon className="w-4 h-4" />
-              </div>
-              <input
-                id="imageUrl"
-                name="imageUrl"
-                type="url"
-                value={formData.imageUrl}
-                onChange={handleChange}
-                disabled={isSubmitting}
-                placeholder="https://images.unsplash.com/photo-..."
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <p className="mt-1 text-[11px] text-slate-500">
-              Paste an image link. Leave blank to automatically use standard scientific apparatus fallback photo.
-            </p>
+            <ImageUploadField
+              value={formData.imageUrl}
+              onChange={(dataUri) => setFormData((prev) => ({ ...prev, imageUrl: dataUri }))}
+              disabled={isSubmitting}
+              label="Resource Photograph (Upload from Laptop)"
+              hint="Select a photo from your computer (JPG, PNG, or WebP up to 5MB). Leave blank to use standard category equipment photo."
+            />
           </div>
 
           {/* Access Prerequisites / Eligibility */}
           <div>
             <label
               htmlFor="eligibility"
-              className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5"
+              className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
             >
               Access Prerequisites / Safety Certification
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <input
@@ -698,7 +696,7 @@ export default function CreateResourcePage() {
                 onChange={handleChange}
                 disabled={isSubmitting}
                 placeholder="e.g. Cleanroom Tier-2 Certified or Laser Safety Module B"
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
           </div>

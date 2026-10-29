@@ -24,7 +24,7 @@ export default function FairAccessSection() {
   ];
 
   return (
-    <section id="fair-access" className="py-20 bg-slate-50 dark:bg-slate-900/30 border-t border-slate-200 dark:border-slate-900 transition-colors duration-200">
+    <section id="fair-access" className="py-20 bg-[#E8EEF5] dark:bg-slate-900/30 border-t border-[#D7E0EA] dark:border-slate-900 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-xs font-semibold uppercase tracking-wider text-blue-700 dark:text-blue-400">

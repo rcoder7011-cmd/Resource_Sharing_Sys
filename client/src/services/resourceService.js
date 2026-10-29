@@ -155,6 +155,62 @@ export async function deleteResource(id, token) {
   return handleResponse(response);
 }
 
+/**
+ * Upload a resource listing photograph directly from user device
+ *
+ * @param {string} base64Image - Data-URI or base64 image string
+ * @param {string} token - JWT authentication token
+ * @returns {Promise<Object>} Upload response containing public relative URL
+ */
+export async function uploadResourceImage(base64Image, token) {
+  if (!token) throw new Error('Authentication token required to upload image');
+  if (!base64Image) throw new Error('Image data is required');
+
+  const response = await fetch(`${API_BASE_URL}/resources/upload-image`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ image: base64Image }),
+  });
+
+  return handleResponse(response);
+}
+
+/**
+ * Resolves any image URL to a fully qualified, displayable image URL
+ * Handles relative backend URLs (/api/resources/images/...), data URIs, and full URLs.
+ *
+ * @param {string} imgUrl - Raw stored image URL or relative path
+ * @returns {string} Fully qualified browser-displayable URL
+ */
+export function resolveImageUrl(imgUrl) {
+  const fallback =
+    'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80';
+
+  if (!imgUrl || typeof imgUrl !== 'string' || !imgUrl.trim()) {
+    return fallback;
+  }
+
+  const trimmed = imgUrl.trim();
+
+  if (
+    trimmed.startsWith('data:') ||
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://')
+  ) {
+    return trimmed;
+  }
+
+  if (trimmed.startsWith('/api')) {
+    const apiHost = API_BASE_URL.replace(/\/api\/?$/, '');
+    return `${apiHost}${trimmed}`;
+  }
+
+  return trimmed;
+}
+
 export default {
   getResources,
   getResourceById,
@@ -163,5 +219,7 @@ export default {
   createResource,
   updateResource,
   deleteResource,
+  uploadResourceImage,
+  resolveImageUrl,
 };
 

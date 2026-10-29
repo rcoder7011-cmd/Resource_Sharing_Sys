@@ -49,7 +49,7 @@ export default function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-slate-200 dark:border-slate-900 bg-gradient-to-b from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900/50 transition-colors duration-200"
+      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-[#D7E0EA] dark:border-slate-900 bg-gradient-to-b from-[#F1F5F9] via-white to-[#E8EEF5] dark:from-slate-950 dark:via-slate-950 dark:to-slate-900/50 transition-colors duration-200"
     >
       {/* Subtle background ambient gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 pointer-events-none overflow-hidden opacity-30">

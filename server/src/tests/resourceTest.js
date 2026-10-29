@@ -7,6 +7,7 @@ require('dotenv').config();
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
+const fs = require('fs');
 const Resource = require('../models/Resource');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
@@ -17,7 +18,10 @@ const {
   createResource,
   updateResource,
   deleteResource,
+  uploadResourceImage,
+  serveResourceImage,
 } = require('../controllers/resourceController');
+const resourceImageService = require('../services/resourceImageService');
 
 let testsPassed = 0;
 let testsFailed = 0;
@@ -54,6 +58,9 @@ function createMockReqRes({
 
   let statusCode = 200;
   let jsonResponse = null;
+  const responseHeaders = {};
+  let sentFile = null;
+  let redirectUrl = null;
 
   const res = {
     status(code) {
@@ -64,11 +71,37 @@ function createMockReqRes({
       jsonResponse = data;
       return this;
     },
+    setHeader(key, value) {
+      responseHeaders[key] = value;
+      return this;
+    },
+    sendFile(filePath) {
+      sentFile = filePath;
+      return this;
+    },
+    redirect(code, url) {
+      if (typeof code === 'string') {
+        url = code;
+        code = 302;
+      }
+      statusCode = code;
+      redirectUrl = url;
+      return this;
+    },
     get statusCode() {
       return statusCode;
     },
     get jsonResponse() {
       return jsonResponse;
+    },
+    get headers() {
+      return responseHeaders;
+    },
+    get sentFile() {
+      return sentFile;
+    },
+    get redirectUrl() {
+      return redirectUrl;
     },
   };
 
@@ -440,6 +473,109 @@ async function runResourceTestSuite() {
     Resource.countDocuments = originalCount;
     Resource.findByIdAndDelete = originalDelete;
     Object.defineProperty(mongoose.connection, 'readyState', { value: originalReadyState, configurable: true });
+  }
+
+  // --- Test Suite 4: Device Image Upload & Static Asset Serving ---
+  console.log('\n--- Test Suite 4: Device Image Upload & Static Asset Serving ---');
+
+  const validPngBase64 =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+  let createdTestImageFilename = null;
+
+  try {
+    // 4.1 Validate service saves valid PNG buffer
+    const pngBuffer = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+      'base64'
+    );
+    const saved = resourceImageService.saveResourceImage(pngBuffer, 'image/png');
+    assert(typeof saved.filename === 'string' && saved.filename.endsWith('.png'), 'Saves PNG buffer with safe filename');
+    assert(saved.relativeUrl.startsWith('/api/resources/images/'), 'Returns relative URL starting with /api/resources/images/');
+    assert(fs.existsSync(saved.fullPath), 'Saved file exists in uploads/resources directory');
+    createdTestImageFilename = saved.filename;
+
+    // 4.2 Rejects invalid mime types
+    let mimeRejected = false;
+    try {
+      resourceImageService.saveResourceImage(Buffer.from('hello world'), 'application/pdf');
+    } catch {
+      mimeRejected = true;
+    }
+    assert(mimeRejected, 'resourceImageService rejects unsupported MIME types (e.g. PDF)');
+
+    // 4.3 Rejects files with invalid magic bytes
+    let magicByteRejected = false;
+    try {
+      resourceImageService.saveResourceImage(Buffer.from([0x00, 0x01, 0x02, 0x03]), 'image/png');
+    } catch {
+      magicByteRejected = true;
+    }
+    assert(magicByteRejected, 'resourceImageService rejects file whose magic bytes do not match declared MIME');
+
+    // 4.4 Controller uploadResourceImage succeeds with 201 Created and image URL
+    const { req: uploadReq, res: uploadRes } = createMockReqRes({
+      method: 'POST',
+      body: { image: validPngBase64 },
+    });
+    await uploadResourceImage(uploadReq, uploadRes, () => {});
+    assert(uploadRes.statusCode === 201, 'uploadResourceImage returns 201 Created');
+    assert(uploadRes.jsonResponse?.success === true, 'upload response has success: true');
+    assert(
+      uploadRes.jsonResponse?.data?.url?.startsWith('/api/resources/images/'),
+      'upload response returns accessible relative URL'
+    );
+
+    // 4.5 Controller uploadResourceImage rejects missing image with 400 Bad Request
+    const { req: badUploadReq, res: badUploadRes } = createMockReqRes({
+      method: 'POST',
+      body: {},
+    });
+    await uploadResourceImage(badUploadReq, badUploadRes, () => {});
+    assert(badUploadRes.statusCode === 400, 'uploadResourceImage rejects missing image payload with 400 Bad Request');
+
+    // 4.6 Controller serveResourceImage blocks directory traversal with 400 Bad Request
+    const { req: traversalReq, res: traversalRes } = createMockReqRes({
+      method: 'GET',
+      params: { filename: '../../etc/passwd' },
+    });
+    await serveResourceImage(traversalReq, traversalRes, () => {});
+    assert(traversalRes.statusCode === 400, 'serveResourceImage prevents directory traversal attacks with 400 Bad Request');
+
+    // 4.7 Controller serveResourceImage falls back gracefully on non-existent file
+    const { req: missingImgReq, res: missingImgRes } = createMockReqRes({
+      method: 'GET',
+      params: { filename: 'res-img-nonexistent-123.jpg' },
+    });
+    await serveResourceImage(missingImgReq, missingImgRes, () => {});
+    assert(missingImgRes.statusCode === 302, 'serveResourceImage redirects missing files with 302 fallback');
+    assert(
+      typeof missingImgRes.redirectUrl === 'string' && missingImgRes.redirectUrl.includes('unsplash.com'),
+      'serveResourceImage fallback points to safe default placeholder'
+    );
+
+    // 4.8 Controller serveResourceImage serves valid file with correct headers
+    if (createdTestImageFilename) {
+      const { req: validImgReq, res: validImgRes } = createMockReqRes({
+        method: 'GET',
+        params: { filename: createdTestImageFilename },
+      });
+      await serveResourceImage(validImgReq, validImgRes, () => {});
+      assert(validImgRes.headers['Content-Type'] === 'image/png', 'serveResourceImage sets Content-Type header to image/png');
+      assert(validImgRes.headers['Cache-Control']?.includes('public'), 'serveResourceImage sets Cache-Control header');
+      assert(typeof validImgRes.sentFile === 'string', 'serveResourceImage transmits file via sendFile');
+    }
+  } finally {
+    // Cleanup created test file
+    if (createdTestImageFilename) {
+      try {
+        const info = resourceImageService.getResourceImageFilePath(createdTestImageFilename);
+        if (info.exists) {
+          fs.unlinkSync(info.fullPath);
+        }
+      } catch {
+        // ignore
+      }
+    }
   }
 
   console.log('\n====================================================');

@@ -11,6 +11,11 @@ const {
   normalizeCategory,
   ALL_CATEGORIES,
 } = require('../config/categories');
+const {
+  saveResourceImage,
+  getResourceImageFilePath,
+  parseBase64Image,
+} = require('../services/resourceImageService');
 
 /**
  * Sanitize regex special characters to prevent NoSQL regex injection
@@ -497,6 +502,20 @@ const createResource = async (req, res, next) => {
       parsedImages = [images.trim()];
     }
 
+    // Convert any base64 data-URIs to saved local image URLs automatically
+    parsedImages = parsedImages.map((img) => {
+      if (typeof img === 'string' && img.startsWith('data:image/')) {
+        try {
+          const parsed = parseBase64Image(img);
+          const saved = saveResourceImage(parsed.buffer, parsed.mimeType);
+          return saved.relativeUrl;
+        } catch {
+          return img;
+        }
+      }
+      return img;
+    });
+
     if (parsedImages.length === 0) {
       parsedImages = [
         'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80',
@@ -671,6 +690,22 @@ const updateResource = async (req, res, next) => {
       };
     }
 
+    // Convert any base64 data-URIs in images updates to saved local image URLs automatically
+    if (updates.images && Array.isArray(updates.images)) {
+      updates.images = updates.images.map((img) => {
+        if (typeof img === 'string' && img.startsWith('data:image/')) {
+          try {
+            const parsed = parseBase64Image(img);
+            const saved = saveResourceImage(parsed.buffer, parsed.mimeType);
+            return saved.relativeUrl;
+          } catch {
+            return img;
+          }
+        }
+        return img;
+      });
+    }
+
     // Apply updates
     Object.assign(resource, updates);
     const updatedResource = await resource.save();
@@ -778,6 +813,93 @@ const getMyResourceUtilization = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Upload a resource listing photograph (Authenticated user)
+ * @route   POST /api/resources/upload-image
+ * @access  Private (Requires JWT)
+ */
+const uploadResourceImage = async (req, res, next) => {
+  try {
+    const { image, mimeType } = req.body;
+    if (!image) {
+      return res.status(400).json({
+        success: false,
+        message: 'Image data is required (data-URI or base64 format)',
+      });
+    }
+
+    let parsed;
+    try {
+      parsed = parseBase64Image(image);
+    } catch (parseErr) {
+      return res.status(400).json({
+        success: false,
+        message: parseErr.message,
+      });
+    }
+
+    const effectiveMime = mimeType || parsed.mimeType;
+
+    let savedFile;
+    try {
+      savedFile = saveResourceImage(parsed.buffer, effectiveMime);
+    } catch (saveErr) {
+      return res.status(400).json({
+        success: false,
+        message: saveErr.message,
+      });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: 'Resource photograph uploaded successfully',
+      data: {
+        url: savedFile.relativeUrl,
+        filename: savedFile.filename,
+        size: savedFile.size,
+        mimeType: savedFile.mimeType,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Serve/stream a stored resource photograph (Public access for <img> tags)
+ * @route   GET /api/resources/images/:filename
+ * @access  Public
+ */
+const serveResourceImage = async (req, res, next) => {
+  try {
+    const { filename } = req.params;
+
+    let fileInfo;
+    try {
+      fileInfo = getResourceImageFilePath(filename);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: err.message,
+      });
+    }
+
+    if (!fileInfo.exists) {
+      // Fallback gracefully to default apparatus photo rather than a broken image
+      return res.redirect(
+        302,
+        'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80'
+      );
+    }
+
+    res.setHeader('Content-Type', fileInfo.mimeType);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.sendFile(fileInfo.fullPath);
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllResources,
   getMyResources,
@@ -786,5 +908,7 @@ module.exports = {
   createResource,
   updateResource,
   deleteResource,
+  uploadResourceImage,
+  serveResourceImage,
 };
 

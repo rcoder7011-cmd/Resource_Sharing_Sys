@@ -22,7 +22,7 @@ import { SAMPLE_RESOURCES } from '../data/sampleResources';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import Modal from '../components/common/Modal';
-import { getResourceById } from '../services/resourceService';
+import { getResourceById, resolveImageUrl } from '../services/resourceService';
 import { createBooking } from '../services/bookingService';
 import { useAuth } from '../context/AuthContext';
 
@@ -199,10 +199,11 @@ export default function ResourceDetailsPage() {
       ? 'warning'
       : 'neutral');
 
-  const images =
+  const rawImages =
     resource.images && resource.images.length > 0
       ? resource.images
       : ['https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&w=800&q=80'];
+  const images = rawImages.map(resolveImageUrl);
 
   const institution =
     resource.institution ||
@@ -330,16 +331,16 @@ export default function ResourceDetailsPage() {
     <>
       <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb Navigation */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-400">
-          <Link to="/" className="hover:text-white transition-colors">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+          <Link to="/" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Home
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <Link to="/resources" className="hover:text-white transition-colors">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
+          <Link to="/resources" className="hover:text-slate-900 dark:hover:text-white transition-colors">
             Catalog
           </Link>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
-          <span className="text-slate-300 font-medium truncate max-w-xs sm:max-w-md">
+          <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-600" />
+          <span className="text-slate-700 dark:text-slate-300 font-medium truncate max-w-xs sm:max-w-md">
             {title}
           </span>
         </nav>
@@ -434,7 +435,7 @@ export default function ResourceDetailsPage() {
           <div className="lg:col-span-8 space-y-8">
             {/* Image Gallery */}
             <div className="space-y-3">
-              <div className="card-surface aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-slate-800 bg-slate-900">
+              <div className="card-surface aspect-[16/10] sm:aspect-[16/9] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
                 <img
                   src={images[activeImageIndex] || images[0]}
                   alt={title}
@@ -453,7 +454,7 @@ export default function ResourceDetailsPage() {
                       className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
                         activeImageIndex === idx
                           ? 'border-blue-500 ring-2 ring-blue-500/30'
-                          : 'border-slate-800 hover:border-slate-700 opacity-60 hover:opacity-100'
+                          : 'border-slate-200 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 opacity-70 hover:opacity-100'
                       }`}
                     >
                       <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
@@ -892,10 +893,10 @@ export default function ResourceDetailsPage() {
 
             {/* Error Message Alert */}
             {bookingError && (
-              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 dark:text-rose-400 mt-0.5" />
                 <div className="space-y-0.5">
-                  <p className="font-semibold text-rose-200">Unable to submit booking</p>
+                  <p className="font-semibold text-rose-800 dark:text-rose-200">Unable to submit booking</p>
                   <p className="text-xs leading-relaxed">{bookingError}</p>
                 </div>
               </div>

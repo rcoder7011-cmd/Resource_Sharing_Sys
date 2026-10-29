@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Save } from 'lucide-react';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
-import { updateResource } from '../../services/resourceService';
+import { updateResource, uploadResourceImage } from '../../services/resourceService';
+import ImageUploadField from './ImageUploadField';
 import { useAuth } from '../../context/AuthContext';
 import {
   CATEGORIES,
@@ -131,6 +132,20 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
     setError('');
 
     try {
+      let finalImageUrl = formData.imageUrl.trim();
+
+      // If user selected a new image file from laptop (data-URI), upload to backend storage
+      if (finalImageUrl.startsWith('data:image/')) {
+        try {
+          const uploadRes = await uploadResourceImage(finalImageUrl, token);
+          if (uploadRes?.data?.url) {
+            finalImageUrl = uploadRes.data.url;
+          }
+        } catch {
+          // If dedicated upload route fails, payload keeps data-URI and backend updateResource converts it
+        }
+      }
+
       const resourceId = resource._id || resource.id;
       const payload = {
         title: formData.title.trim(),
@@ -146,7 +161,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
         availabilityStatus: formData.availabilityStatus,
         condition: formData.condition,
         quantity: parseInt(formData.quantity, 10) || 1,
-        images: formData.imageUrl.trim() ? [formData.imageUrl.trim()] : resource.images,
+        images: finalImageUrl ? [finalImageUrl] : (resource.images || []),
       };
 
       const result = await updateResource(resourceId, payload, token);
@@ -167,14 +182,14 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Resource Listing">
       <form onSubmit={handleSubmit} className="space-y-4 text-xs sm:text-sm">
         {error && (
-          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 dark:text-rose-400" />
             <span>{error}</span>
           </div>
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
             Title
           </label>
           <input
@@ -183,13 +198,13 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
             value={formData.title}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Category
             </label>
             <select
@@ -197,7 +212,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.category}
               onChange={handleCategoryChange}
               disabled={isSubmitting}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm"
+              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm"
             >
               {categoryOptions.map((cat) => (
                 <option key={cat} value={cat}>
@@ -208,7 +223,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Subcategory
             </label>
             <select
@@ -216,7 +231,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.subcategory}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm"
+              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm"
             >
               {currentSubcategories.map((sub) => (
                 <option key={sub} value={sub}>
@@ -227,7 +242,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Campus
             </label>
             <select
@@ -235,7 +250,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.campus}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm"
+              className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm"
             >
               {campusOptions.map((camp) => (
                 <option key={camp} value={camp}>
@@ -323,7 +338,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
         )}
 
         <div>
-          <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+          <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
             Description
           </label>
           <textarea
@@ -332,13 +347,13 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
             value={formData.description}
             onChange={handleChange}
             disabled={isSubmitting}
-            className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm"
+            className="w-full px-3 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm"
           />
         </div>
 
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Status
             </label>
             <select
@@ -346,7 +361,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.availabilityStatus}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+              className="w-full px-2.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs"
             >
               <option value="available">Available</option>
               <option value="unavailable">Booking Req.</option>
@@ -355,7 +370,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Condition
             </label>
             <select
@@ -363,7 +378,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.condition}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+              className="w-full px-2.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs"
             >
               <option value="new">New</option>
               <option value="good">Good</option>
@@ -373,7 +388,7 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+            <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">
               Quantity
             </label>
             <input
@@ -383,12 +398,22 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
               value={formData.quantity}
               onChange={handleChange}
               disabled={isSubmitting}
-              className="w-full px-2.5 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white text-xs"
+              className="w-full px-2.5 py-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs"
             />
           </div>
         </div>
 
-        <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-800">
+        <div>
+          <ImageUploadField
+            value={formData.imageUrl}
+            onChange={(dataUri) => setFormData((prev) => ({ ...prev, imageUrl: dataUri }))}
+            disabled={isSubmitting}
+            label="Resource Photograph (Upload from Laptop)"
+            hint="Upload a new photo from your computer (JPG, PNG, WebP up to 5MB), or keep existing."
+          />
+        </div>
+
+        <div className="pt-3 flex items-center justify-end gap-2 border-t border-slate-200 dark:border-slate-800">
           <Button variant="secondary" size="sm" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

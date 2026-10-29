@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Building, ShieldCheck, ArrowRight, ImageOff } from 'lucide-react';
 import Badge from '../common/Badge';
+import { resolveImageUrl } from '../../services/resourceService';
 
 /**
  * Reusable Resource Card component with image fallbacks and institutional metadata.
@@ -55,7 +56,7 @@ export default function ResourceCard({ resource }) {
         <div className="relative aspect-[16/10] bg-slate-100 dark:bg-slate-900 overflow-hidden">
           {!imgError ? (
             <img
-              src={resource.images?.[0] || fallbackImage}
+              src={resolveImageUrl(resource.images?.[0])}
               alt={resourceTitle}
               loading="lazy"
               onError={() => setImgError(true)}
@@ -77,11 +78,11 @@ export default function ResourceCard({ resource }) {
 
           {/* Category Chip & Subcategory */}
           <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
-            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-900/80 dark:bg-slate-950/80 backdrop-blur-md text-white dark:text-slate-300 border border-slate-700/60 shadow-sm">
+            <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white/95 text-slate-800 border border-[#D7E0EA] shadow-sm dark:bg-slate-950/80 dark:text-slate-300 dark:border-slate-700/60">
               {resource.category}
             </span>
             {resource.subcategory && (
-              <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-blue-900/80 dark:bg-blue-950/80 backdrop-blur-md text-blue-100 dark:text-blue-300 border border-blue-700/50 dark:border-blue-800/50 shadow-sm">
+              <span className="text-[10px] font-normal px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200 shadow-sm dark:bg-blue-950/80 dark:text-blue-300 dark:border-blue-800/50">
                 {resource.subcategory}
               </span>
             )}
@@ -92,8 +93,8 @@ export default function ResourceCard({ resource }) {
             <span
               className={`text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded shadow-sm ${
                 isSampleItem
-                  ? 'bg-blue-900/90 dark:bg-blue-950/90 text-blue-100 dark:text-blue-300 border border-blue-700/60 dark:border-blue-800/60'
-                  : 'bg-emerald-900/90 dark:bg-emerald-950/90 text-emerald-100 dark:text-emerald-300 border border-emerald-700/60 dark:border-emerald-800/60'
+                  ? 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/90 dark:text-blue-300 dark:border-blue-800/60'
+                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/90 dark:text-emerald-300 dark:border-emerald-800/60'
               }`}
             >
               {isSampleItem ? 'Institutional Facility' : 'Verified Listing'}

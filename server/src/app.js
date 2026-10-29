@@ -16,9 +16,9 @@ const app = express();
 // 1. Security Headers (HSTS, CSP, nosniff, SAMEORIGIN, no X-Powered-By)
 app.use(securityHeaders);
 
-// 2. Body Parsing with Strict 1MB Payload Size Limit
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+// 2. Body Parsing with 10MB Payload Size Limit (Supports client image uploads up to 5MB binary)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // 3. NoSQL Injection & Prototype Sanitization
 app.use(sanitizeNoSql);
