@@ -11,12 +11,12 @@ export default function Badge({
   icon: Icon,
 }) {
   const variantStyles = {
-    available: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25',
-    warning: 'bg-amber-500/10 text-amber-300 border border-amber-500/25',
-    danger: 'bg-rose-500/10 text-rose-400 border border-rose-500/25',
-    info: 'bg-blue-500/10 text-blue-400 border border-blue-500/25',
-    purple: 'bg-purple-500/10 text-purple-300 border border-purple-500/25',
-    neutral: 'bg-slate-800 text-slate-300 border border-slate-700/60',
+    available: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30',
+    warning: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/30',
+    danger: 'bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30',
+    info: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/30',
+    purple: 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/30',
+    neutral: 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700/60',
   };
 
   const sizeStyles = {

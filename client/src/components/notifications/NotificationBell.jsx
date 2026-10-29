@@ -39,23 +39,23 @@ function formatRelativeTime(dateString) {
 function getNotificationIcon(type) {
   switch (type) {
     case 'booking_created':
-      return { icon: Inbox, color: 'text-amber-400 bg-amber-500/10 border-amber-500/25' };
+      return { icon: Inbox, color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/25' };
     case 'booking_approved':
-      return { icon: CheckCircle2, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/25' };
+      return { icon: CheckCircle2, color: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border-emerald-500/25' };
     case 'booking_rejected':
-      return { icon: X, color: 'text-rose-400 bg-rose-500/10 border-rose-500/25' };
+      return { icon: X, color: 'text-rose-600 dark:text-rose-400 bg-rose-500/10 border-rose-500/25' };
     case 'booking_cancelled':
-      return { icon: X, color: 'text-slate-400 bg-slate-800 border-slate-700' };
+      return { icon: X, color: 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700' };
     case 'booking_checked_in':
-      return { icon: CheckSquare, color: 'text-blue-400 bg-blue-500/10 border-blue-500/25' };
+      return { icon: CheckSquare, color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/25' };
     case 'booking_returned':
-      return { icon: CornerDownLeft, color: 'text-purple-400 bg-purple-500/10 border-purple-500/25' };
+      return { icon: CornerDownLeft, color: 'text-purple-600 dark:text-purple-400 bg-purple-500/10 border-purple-500/25' };
     case 'booking_issue_reported':
-      return { icon: AlertTriangle, color: 'text-amber-400 bg-amber-500/10 border-amber-500/25' };
+      return { icon: AlertTriangle, color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/25' };
     case 'booking_deadline_reminder':
-      return { icon: Clock, color: 'text-amber-400 bg-amber-500/10 border-amber-500/25' };
+      return { icon: Clock, color: 'text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-500/25' };
     default:
-      return { icon: Bell, color: 'text-blue-400 bg-blue-500/10 border-blue-500/25' };
+      return { icon: Bell, color: 'text-blue-600 dark:text-blue-400 bg-blue-500/10 border-blue-500/25' };
   }
 }
 
@@ -114,8 +114,8 @@ export default function NotificationBell() {
         onClick={() => setIsOpen((prev) => !prev)}
         className={`relative p-2 rounded-xl border transition-colors ${
           isOpen
-            ? 'bg-blue-600/20 border-blue-500/40 text-blue-300'
-            : 'bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700'
+            ? 'bg-blue-600/15 border-blue-500/40 text-blue-600 dark:text-blue-300'
+            : 'bg-slate-100 dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700'
         }`}
         title="Notifications"
         aria-label="Notifications"
@@ -126,14 +126,14 @@ export default function NotificationBell() {
         {/* Live Socket Connection Dot */}
         {isConnected && (
           <span
-            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400"
+            className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500"
             title="Real-Time Alerts Connected"
           />
         )}
 
         {/* Unread Badge Counter */}
         {unreadCount > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-slate-950 shadow-md animate-pulse">
+          <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-blue-600 text-white text-[10px] font-bold flex items-center justify-center border-2 border-white dark:border-slate-950 shadow-md animate-pulse">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -141,13 +141,13 @@ export default function NotificationBell() {
 
       {/* Dropdown Panel */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-slate-950 border border-slate-800 shadow-2xl z-50 overflow-hidden flex flex-col max-h-[520px]">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 shadow-xl dark:shadow-2xl z-50 overflow-hidden flex flex-col max-h-[520px] transition-colors">
           {/* Header */}
-          <div className="p-3.5 border-b border-slate-800/80 bg-slate-900/60 flex items-center justify-between">
+          <div className="p-3.5 border-b border-slate-200 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-white tracking-tight">Notifications</span>
+              <span className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Notifications</span>
               {unreadCount > 0 && (
-                <span className="text-[11px] font-semibold px-2 py-0.2 rounded-full bg-blue-600/30 text-blue-300 border border-blue-500/30">
+                <span className="text-[11px] font-semibold px-2 py-0.2 rounded-full bg-blue-600/15 dark:bg-blue-600/30 text-blue-700 dark:text-blue-300 border border-blue-500/25 dark:border-blue-500/30">
                   {unreadCount} unread
                 </span>
               )}
@@ -158,7 +158,7 @@ export default function NotificationBell() {
                 <button
                   type="button"
                   onClick={markAllAsRead}
-                  className="text-[11px] text-slate-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+                  className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-1 transition-colors"
                   title="Mark all as read"
                 >
                   <CheckCheck className="w-3.5 h-3.5" />
@@ -169,14 +169,14 @@ export default function NotificationBell() {
           </div>
 
           {/* Filter Pills */}
-          <div className="px-3.5 py-2 border-b border-slate-800/60 bg-slate-900/30 flex items-center gap-2 text-xs">
+          <div className="px-3.5 py-2 border-b border-slate-200 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-900/30 flex items-center gap-2 text-xs">
             <button
               type="button"
               onClick={() => setFilter('all')}
               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
                 filter === 'all'
                   ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
               }`}
             >
               All ({notifications.length})
@@ -187,7 +187,7 @@ export default function NotificationBell() {
               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-colors ${
                 filter === 'unread'
                   ? 'bg-blue-600 text-white'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800'
               }`}
             >
               Unread ({unreadCount})
@@ -196,7 +196,7 @@ export default function NotificationBell() {
             <div className="ml-auto flex items-center gap-1.5 text-[10px] text-slate-500">
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  isConnected ? 'bg-emerald-400' : 'bg-slate-600'
+                  isConnected ? 'bg-emerald-500' : 'bg-slate-400 dark:bg-slate-600'
                 }`}
               />
               <span>{isConnected ? 'Live' : 'Syncing'}</span>
@@ -204,13 +204,13 @@ export default function NotificationBell() {
           </div>
 
           {/* Notification List */}
-          <div className="overflow-y-auto divide-y divide-slate-800/60 flex-1">
+          <div className="overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/60 flex-1">
             {displayedNotifications.length === 0 ? (
               <div className="py-12 px-4 text-center space-y-2">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mx-auto">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 dark:text-slate-500 mx-auto">
                   <Bell className="w-5 h-5" />
                 </div>
-                <p className="text-xs font-semibold text-slate-300">
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-300">
                   {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
                 </p>
                 <p className="text-[11px] text-slate-500 max-w-[200px] mx-auto">
@@ -229,8 +229,8 @@ export default function NotificationBell() {
                   <div
                     key={id}
                     onClick={() => handleItemClick(notif)}
-                    className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-slate-900/80 ${
-                      isUnread ? 'bg-blue-950/20' : 'bg-transparent'
+                    className={`p-3.5 transition-colors cursor-pointer flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-900/80 ${
+                      isUnread ? 'bg-blue-50/50 dark:bg-blue-950/20' : 'bg-transparent'
                     }`}
                   >
                     {/* Icon */}
@@ -245,7 +245,7 @@ export default function NotificationBell() {
                       <div className="flex items-center justify-between gap-2">
                         <p
                           className={`text-xs truncate ${
-                            isUnread ? 'font-bold text-white' : 'font-medium text-slate-300'
+                            isUnread ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           {notif.title}
@@ -255,12 +255,12 @@ export default function NotificationBell() {
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                         {notif.message}
                       </p>
 
                       {notif.link && (
-                        <p className="text-[10px] text-blue-400 flex items-center gap-1 pt-0.5">
+                        <p className="text-[10px] text-blue-600 dark:text-blue-400 flex items-center gap-1 pt-0.5">
                           <span>View in Dashboard</span>
                           <ExternalLink className="w-2.5 h-2.5" />
                         </p>
@@ -270,7 +270,7 @@ export default function NotificationBell() {
                     {/* Unread indicator dot */}
                     {isUnread && (
                       <span
-                        className="w-2 h-2 rounded-full bg-blue-500 shrink-0 mt-1.5"
+                        className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-1.5"
                         title="Unread"
                       />
                     )}

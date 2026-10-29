@@ -106,11 +106,15 @@ export default function ExplorePage() {
       result = result.filter(
         (item) =>
           item.name.toLowerCase().includes(q) ||
+          (item.title && item.title.toLowerCase().includes(q)) ||
           item.summary.toLowerCase().includes(q) ||
           item.description.toLowerCase().includes(q) ||
           item.institution.toLowerCase().includes(q) ||
           item.category.toLowerCase().includes(q) ||
-          (item.subcategory && item.subcategory.toLowerCase().includes(q))
+          (item.subcategory && item.subcategory.toLowerCase().includes(q)) ||
+          (item.academicMetadata?.subject && item.academicMetadata.subject.toLowerCase().includes(q)) ||
+          (item.academicMetadata?.bookTitle && item.academicMetadata.bookTitle.toLowerCase().includes(q)) ||
+          (item.academicMetadata?.author && item.academicMetadata.author.toLowerCase().includes(q))
       );
     }
 
@@ -190,10 +194,10 @@ export default function ExplorePage() {
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight transition-colors">
               Explore Shared Resources
             </h1>
-            <p className="text-sm sm:text-base text-slate-400 max-w-2xl leading-relaxed mt-1">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed mt-1">
               Search scientific apparatus, computing clusters, and specialized labs across partner campuses.
             </p>
           </div>
@@ -203,8 +207,8 @@ export default function ExplorePage() {
             <span
               className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
                 dataSource === 'live'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
-                  : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
+                  : 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30'
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
@@ -215,19 +219,19 @@ export default function ExplorePage() {
       </div>
 
       {/* Need-First Smart Match Discovery Card */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-slate-900 to-purple-950/30 border border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg">
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-50 via-white to-purple-50 dark:from-blue-950/40 dark:via-slate-900 dark:to-purple-950/30 border border-blue-200 dark:border-blue-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm dark:shadow-lg transition-colors">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-md">
+          <div className="w-11 h-11 rounded-xl bg-blue-600/15 dark:bg-blue-600/20 border border-blue-500/30 dark:border-blue-500/40 flex items-center justify-center text-blue-600 dark:text-blue-400 shrink-0 shadow-sm">
             <Sparkles className="w-5 h-5" />
           </div>
           <div className="space-y-0.5">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-white">Need-First Smart Matching</h3>
-              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white">Need-First Smart Matching</h3>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
                 New • Smart Match
               </span>
             </div>
-            <p className="text-xs text-slate-400 max-w-xl">
+            <p className="text-xs text-slate-600 dark:text-slate-400 max-w-xl">
               Describe your project in natural language (e.g. <em>"DSLR camera for college festival tomorrow"</em>) and receive ranked, availability-checked resource recommendations.
             </p>
           </div>
@@ -307,10 +311,10 @@ export default function ExplorePage() {
 
       {/* Pagination Controls */}
       {dataSource === 'live' && pagination.pages > 1 && (
-        <div className="flex items-center justify-between pt-6 border-t border-slate-800">
-          <p className="text-xs text-slate-400">
-            Showing Page <span className="text-white font-semibold">{pagination.page}</span> of{' '}
-            <span className="text-white font-semibold">{pagination.pages}</span> ({pagination.total} total resources)
+        <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Showing Page <span className="text-slate-900 dark:text-white font-semibold">{pagination.page}</span> of{' '}
+            <span className="text-slate-900 dark:text-white font-semibold">{pagination.pages}</span> ({pagination.total} total resources)
           </p>
 
           <div className="flex items-center gap-2">
@@ -340,9 +344,9 @@ export default function ExplorePage() {
       )}
 
       {/* Informative Status Footer */}
-      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-blue-400 shrink-0" />
+          <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
           <span>
             {dataSource === 'live'
               ? `Live Catalog: ${totalCount} resources available across participating facilities`

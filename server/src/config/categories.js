@@ -25,6 +25,7 @@ const CATEGORY_REGISTRY = {
       'Lunch Boxes',
       'Notebooks and Registers',
       'Folders and Files',
+      'Pens, Pencils & Stationery',
       'Other Essentials',
     ],
   },
@@ -46,6 +47,7 @@ const CATEGORY_REGISTRY = {
       'Previous-Year Question Papers',
       'Practical Files',
       'Drawing Sheets and Project Files',
+      'Subject-Specific Books',
       'Other Books & Notes',
     ],
   },
@@ -78,6 +80,8 @@ const CATEGORY_REGISTRY = {
       'Computer Mice and Keyboards',
       'Chargers and Adapters',
       'USB Drives',
+      'Keyboards & Mice',
+      'Headphones & Earphones',
       'Computer and Device Accessories',
       'Other Gadgets',
     ],
@@ -203,18 +207,39 @@ const ACADEMIC_SEMESTERS = [
 const ALL_CATEGORIES = Object.keys(CATEGORY_REGISTRY);
 
 /**
+ * Category Aliases for backward compatibility or alternate naming conventions
+ */
+const CATEGORY_ALIASES = {
+  'Engineering Drawing & Design': 'Design, Drawing & Architecture',
+  'Design & Drawing': 'Design, Drawing & Architecture',
+  'Books & Materials': 'Books & Study Materials',
+  'Study Materials': 'Books & Study Materials',
+};
+
+/**
+ * Helper: Normalize category string to canonical form
+ */
+function normalizeCategory(category) {
+  if (!category || typeof category !== 'string') return category;
+  const trimmed = category.trim();
+  return CATEGORY_ALIASES[trimmed] || trimmed;
+}
+
+/**
  * Helper: Validate category
  */
 function isValidCategory(category) {
   if (!category || typeof category !== 'string') return false;
-  return ALL_CATEGORIES.includes(category.trim());
+  const canonical = normalizeCategory(category);
+  return ALL_CATEGORIES.includes(canonical);
 }
 
 /**
  * Helper: Get subcategories for a given category
  */
 function getSubcategoriesForCategory(category) {
-  const cat = CATEGORY_REGISTRY[category];
+  const canonical = normalizeCategory(category);
+  const cat = CATEGORY_REGISTRY[canonical];
   return cat ? cat.subcategories : ['General Resource', 'Other'];
 }
 
@@ -222,15 +247,18 @@ function getSubcategoriesForCategory(category) {
  * Helper: Check if category supports academic metadata
  */
 function categorySupportsAcademicFields(category) {
-  const cat = CATEGORY_REGISTRY[category];
+  const canonical = normalizeCategory(category);
+  const cat = CATEGORY_REGISTRY[canonical];
   return Boolean(cat?.hasAcademicFields);
 }
 
 module.exports = {
   CATEGORY_REGISTRY,
   ALL_CATEGORIES,
+  CATEGORY_ALIASES,
   ACADEMIC_BRANCHES,
   ACADEMIC_SEMESTERS,
+  normalizeCategory,
   isValidCategory,
   getSubcategoriesForCategory,
   categorySupportsAcademicFields,

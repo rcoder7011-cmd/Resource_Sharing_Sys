@@ -56,14 +56,14 @@ export default function ResourceFilters({
   };
 
   return (
-    <div className="space-y-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-lg">
+    <div className="space-y-4 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm dark:shadow-lg transition-colors">
       {/* Top Search Input & Sort row */}
       <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
         <div className="relative flex-1">
           <label htmlFor="resource-search" className="sr-only">
             Search resources
           </label>
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
             <Search className="w-4 h-4" />
           </div>
           <input
@@ -72,13 +72,13 @@ export default function ResourceFilters({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by item, book title, author, course, instrument, calculator..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:border-transparent transition-all"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-white"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-slate-400 hover:text-slate-700 dark:hover:text-white"
             >
               Clear
             </button>
@@ -87,7 +87,7 @@ export default function ResourceFilters({
 
         {/* Sort Dropdown */}
         <div className="flex items-center gap-2 shrink-0">
-          <label htmlFor="sort-select" className="text-xs text-slate-400 flex items-center gap-1">
+          <label htmlFor="sort-select" className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1">
             <SlidersHorizontal className="w-3.5 h-3.5" />
             <span>Sort:</span>
           </label>
@@ -95,7 +95,7 @@ export default function ResourceFilters({
             id="sort-select"
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="bg-slate-950 border border-slate-800 text-xs text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
+            className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-200 rounded-lg px-3 py-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 cursor-pointer"
           >
             <option value="newest">Newest First</option>
             <option value="name-asc">Name (A – Z)</option>
@@ -117,7 +117,7 @@ export default function ResourceFilters({
                 className={`text-xs px-3 py-1.5 rounded-lg font-medium transition-colors ${
                   isSelected
                     ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/30'
-                    : 'bg-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/60'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border border-slate-200 dark:bg-slate-800/80 dark:text-slate-400 dark:hover:text-white dark:hover:bg-slate-800 dark:border-slate-700/60'
                 }`}
               >
                 {cat}
@@ -129,9 +129,9 @@ export default function ResourceFilters({
 
       {/* Subcategory Pills Row (Visible when a specific category is selected) */}
       {subcategoryList.length > 0 && (
-        <div className="pt-1 pb-1 overflow-x-auto scrollbar-thin border-t border-slate-800/50">
+        <div className="pt-2 pb-1 overflow-x-auto scrollbar-thin border-t border-slate-200 dark:border-slate-800/50">
           <div className="flex items-center gap-1.5 min-w-max">
-            <span className="text-[11px] font-semibold text-slate-400 mr-1 uppercase tracking-wider">
+            <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mr-1 uppercase tracking-wider">
               Subcategory:
             </span>
             {subcategoryList.map((sub) => {
@@ -143,8 +143,8 @@ export default function ResourceFilters({
                   onClick={() => setSelectedSubcategory && setSelectedSubcategory(sub)}
                   className={`text-[11px] px-2.5 py-1 rounded-md transition-all ${
                     isSelected
-                      ? 'bg-blue-500/20 text-blue-300 border border-blue-500/50 font-semibold'
-                      : 'bg-slate-950/60 text-slate-400 hover:text-slate-200 border border-slate-800'
+                      ? 'bg-blue-50 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-500/50 font-semibold'
+                      : 'bg-slate-50 dark:bg-slate-950/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-800'
                   }`}
                 >
                   {sub}
@@ -156,19 +156,19 @@ export default function ResourceFilters({
       )}
 
       {/* Secondary Dropdown Filters Row */}
-      <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex flex-wrap items-center gap-3">
           {/* Academic Branch Selector */}
           {showBranchFilter && setSelectedBranch && (
             <div className="flex items-center gap-1.5">
-              <span className="text-slate-400 flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5 text-blue-400" />
+              <span className="text-slate-600 dark:text-slate-400 flex items-center gap-1">
+                <BookOpen className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span>Branch:</span>
               </span>
               <select
                 value={selectedBranch || 'All Branches'}
                 onChange={(e) => setSelectedBranch(e.target.value)}
-                className="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 max-w-[200px] truncate"
+                className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 max-w-[200px] truncate"
               >
                 {ACADEMIC_BRANCHES.map((branch) => (
                   <option key={branch} value={branch}>
@@ -181,11 +181,11 @@ export default function ResourceFilters({
 
           {/* Location Selector */}
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400">Campus:</span>
+            <span className="text-slate-600 dark:text-slate-400">Campus:</span>
             <select
               value={selectedLocation}
               onChange={(e) => setSelectedLocation(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               {LOCATIONS.map((loc) => (
                 <option key={loc} value={loc}>
@@ -197,11 +197,11 @@ export default function ResourceFilters({
 
           {/* Availability Selector */}
           <div className="flex items-center gap-1.5">
-            <span className="text-slate-400">Availability:</span>
+            <span className="text-slate-600 dark:text-slate-400">Availability:</span>
             <select
               value={selectedAvailability}
               onChange={(e) => setSelectedAvailability(e.target.value)}
-              className="bg-slate-950 border border-slate-800 text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               {AVAILABILITY_OPTIONS.map((status) => (
                 <option key={status} value={status}>
@@ -214,15 +214,15 @@ export default function ResourceFilters({
 
         {/* Results Count & Clear All */}
         <div className="flex items-center gap-3">
-          <span className="text-slate-400">
-            Showing <strong className="text-white">{totalResults}</strong> available resources
+          <span className="text-slate-500 dark:text-slate-400">
+            Showing <strong className="text-slate-900 dark:text-white">{totalResults}</strong> available resources
           </span>
 
           {hasActiveFilters && (
             <button
               type="button"
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-amber-400 hover:text-amber-300 hover:bg-amber-950/30 border border-amber-500/20 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-950/30 border border-amber-200 dark:border-amber-500/20 transition-colors font-medium"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset Filters</span>

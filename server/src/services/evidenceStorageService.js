@@ -13,7 +13,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 
-const UPLOAD_DIR = path.resolve(__dirname, '../../uploads/evidence');
+const UPLOAD_DIR = process.env.EVIDENCE_UPLOAD_DIR
+  ? path.resolve(process.env.EVIDENCE_UPLOAD_DIR)
+  : path.resolve(__dirname, '../../uploads/evidence');
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 const ALLOWED_MIME_TYPES = {

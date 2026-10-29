@@ -56,6 +56,47 @@ export default function ResourceDetailsPage() {
 
   const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 
+  // Prefill booking parameters from Smart Match redirect
+  useEffect(() => {
+    if (!location.search) return;
+    try {
+      const searchParams = new URLSearchParams(location.search);
+      const startParam = searchParams.get('startAt');
+      const endParam = searchParams.get('endAt');
+      const qtyParam = searchParams.get('quantity');
+
+      if (startParam) {
+        const s = new Date(startParam);
+        if (!isNaN(s.getTime())) {
+          const pad = (n) => String(n).padStart(2, '0');
+          setBookingDate(`${s.getFullYear()}-${pad(s.getMonth() + 1)}-${pad(s.getDate())}`);
+          setStartTime(`${pad(s.getHours())}:${pad(s.getMinutes())}`);
+        }
+      }
+
+      if (endParam) {
+        const e = new Date(endParam);
+        if (!isNaN(e.getTime())) {
+          const pad = (n) => String(n).padStart(2, '0');
+          setEndTime(`${pad(e.getHours())}:${pad(e.getMinutes())}`);
+        }
+      }
+
+      if (qtyParam) {
+        const q = parseInt(qtyParam, 10);
+        if (!isNaN(q) && q >= 1 && q <= 1000) {
+          setBookingQuantity(q);
+        }
+      }
+
+      if (startParam && endParam && isAuthenticated) {
+        setBookingModalOpen(true);
+      }
+    } catch {
+      // Ignore malformed search params safely
+    }
+  }, [location.search, isAuthenticated]);
+
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -304,30 +345,30 @@ export default function ResourceDetailsPage() {
         </nav>
 
         {/* Hero Header Row */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-800">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200 dark:border-slate-800">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2.5">
               <Badge variant={badgeVariant} size="md">
                 {availabilityText}
               </Badge>
-              <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+              <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
                 {resource.category}
               </span>
               {resource.subcategory && (
-                <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-blue-950/80 text-blue-300 border border-blue-800/60">
+                <span className="text-xs font-medium px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60">
                   {resource.subcategory}
                 </span>
               )}
-              <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-950 text-blue-300 border border-blue-800/60 font-mono">
+              <span className="text-xs font-medium px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 font-mono">
                 {resource.resourceType === 'space' ? 'Facility Space' : 'Specialized Equipment'}
               </span>
               <span
                 className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${
                   !isLiveDatabase
-                    ? 'bg-amber-950/60 text-amber-300 border border-amber-800/60'
+                    ? 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800/60'
                     : resource.isSample
-                    ? 'bg-blue-950 text-blue-300 border border-blue-800/60'
-                    : 'bg-emerald-950 text-emerald-300 border border-emerald-800/60'
+                    ? 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border border-blue-300 dark:border-blue-800/60'
+                    : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/60'
                 }`}
               >
                 {!isLiveDatabase
@@ -338,12 +379,12 @@ export default function ResourceDetailsPage() {
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight transition-colors">
               {title}
             </h1>
 
-            <p className="text-sm text-slate-400 flex items-center gap-2">
-              <Building className="w-4 h-4 text-slate-500 shrink-0" />
+            <p className="text-sm text-slate-500 dark:text-slate-400 flex items-center gap-2">
+              <Building className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0" />
               <span>{institution}</span>
             </p>
           </div>
@@ -423,31 +464,31 @@ export default function ResourceDetailsPage() {
             </div>
 
             {/* Description & Overview */}
-            <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
-              <h2 className="text-lg font-bold text-white tracking-tight">
+            <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 Equipment Overview & Capabilities
               </h2>
-              <div className="text-sm text-slate-300 leading-relaxed space-y-3 whitespace-pre-line">
+              <div className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed space-y-3 whitespace-pre-line">
                 {description}
               </div>
             </div>
 
             {/* Technical Specifications */}
             {specsEntries.length > 0 && (
-              <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
-                <h2 className="text-lg font-bold text-white tracking-tight">
+              <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                   Technical Specifications
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                   {specsEntries.map(([key, val], idx) => (
                     <div
                       key={idx}
-                      className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80 flex flex-col justify-between"
+                      className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 flex flex-col justify-between"
                     >
-                      <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
+                      <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider">
                         {key}
                       </span>
-                      <span className="text-white font-medium mt-1">{String(val)}</span>
+                      <span className="text-slate-900 dark:text-white font-medium mt-1">{String(val)}</span>
                     </div>
                   ))}
                 </div>
@@ -457,78 +498,78 @@ export default function ResourceDetailsPage() {
             {/* Academic & Course Information */}
             {resource.academicMetadata &&
               Object.values(resource.academicMetadata).some((v) => Boolean(v && String(v).trim())) && (
-                <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
-                  <h2 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                    <BookOpen className="w-5 h-5 text-blue-400" />
+                <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     <span>Academic & Course Information</span>
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm">
                     {resource.academicMetadata.subject && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Subject / Topic
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.subject}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.branch && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Department / Branch
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.branch}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.author && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Author / Creator
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.author}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.edition && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Edition / Academic Year
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.edition}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.course && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Course / Class
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.course}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.semester && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           Semester / Year
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.semester}
                         </span>
                       </div>
                     )}
                     {resource.academicMetadata.isbn && (
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                        <span className="text-slate-400 text-xs font-semibold uppercase tracking-wider block">
+                      <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80">
+                        <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider block">
                           ISBN
                         </span>
-                        <span className="text-white font-medium mt-1 block">
+                        <span className="text-slate-900 dark:text-white font-medium mt-1 block">
                           {resource.academicMetadata.isbn}
                         </span>
                       </div>
@@ -538,14 +579,14 @@ export default function ResourceDetailsPage() {
               )}
 
             {/* Usage Conditions */}
-            <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-800 space-y-4">
-              <h2 className="text-lg font-bold text-white tracking-tight">
+            <div className="card-surface p-6 sm:p-8 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 Institutional Usage Conditions
               </h2>
-              <ul className="space-y-2 text-xs sm:text-sm text-slate-400">
+              <ul className="space-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 {usageConditions.map((cond, idx) => (
                   <li key={idx} className="flex items-start gap-2.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                     <span>{cond}</span>
                   </li>
                 ))}
@@ -556,35 +597,35 @@ export default function ResourceDetailsPage() {
           {/* Right Column (4 cols): Location, Access Prerequisites, Custodian Information */}
           <div className="lg:col-span-4 space-y-6">
             {/* Facility Location */}
-            <div className="card-surface p-6 rounded-2xl border border-slate-800 space-y-4">
-              <h3 className="text-sm font-bold text-white tracking-tight uppercase tracking-wider text-slate-300">
+            <div className="card-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Facility Location
               </h3>
 
               <div className="space-y-3 text-xs sm:text-sm">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-white">{campus}</p>
-                    <p className="text-slate-400">{building}</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">{campus}</p>
+                    <p className="text-slate-600 dark:text-slate-400">{building}</p>
                     <p className="text-slate-500 font-mono text-xs">{room}</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-3 pt-3 border-t border-slate-800/80">
-                  <Clock className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-3 pt-3 border-t border-slate-200 dark:border-slate-800/80">
+                  <Clock className="w-4 h-4 text-slate-400 dark:text-slate-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-white">Operating Hours</p>
-                    <p className="text-slate-400 text-xs">
+                    <p className="font-semibold text-slate-900 dark:text-white">Operating Hours</p>
+                    <p className="text-slate-600 dark:text-slate-400 text-xs">
                       {resource.operatingHours || 'Monday – Friday: 08:30 – 18:00'}
                     </p>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+                <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
                   <span>Available Quantity:</span>
-                  <span className="font-bold text-white flex items-center gap-1.5">
-                    <Package className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+                    <Package className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                     <span>{resource.quantity || 1} units</span>
                   </span>
                 </div>
@@ -592,9 +633,9 @@ export default function ResourceDetailsPage() {
             </div>
 
             {/* Access Prerequisites & Safety Level */}
-            <div className="card-surface p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div className="card-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-white uppercase tracking-wider text-slate-300">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                   Access Prerequisites
                 </h3>
                 <Badge variant={resource.safetyLevel === 'Restricted Tier-2' ? 'warning' : 'info'} size="sm">
@@ -602,13 +643,13 @@ export default function ResourceDetailsPage() {
                 </Badge>
               </div>
 
-              <ul className="space-y-2.5 text-xs text-slate-300">
+              <ul className="space-y-2.5 text-xs text-slate-700 dark:text-slate-300">
                 {accessRequirements.map((req, idx) => (
                   <li
                     key={idx}
-                    className="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800/80 flex items-start gap-2"
+                    className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800/80 flex items-start gap-2"
                   >
-                    <ShieldCheck className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                    <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
                     <span>{req}</span>
                   </li>
                 ))}
@@ -616,23 +657,23 @@ export default function ResourceDetailsPage() {
             </div>
 
             {/* Custodian / Owner Profile Card */}
-            <div className="card-surface p-6 rounded-2xl border border-slate-800 space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider text-slate-300">
+            <div className="card-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
                 Equipment Custodian
               </h3>
 
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-xl bg-blue-600/15 dark:bg-blue-600/20 border border-blue-500/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-sm">
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">
                     {resource.owner?.name || 'Facility Coordinator'}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     {resource.owner?.email ? (
-                      <span className="flex items-center gap-1 mt-0.5 text-slate-400">
-                        <Mail className="w-3 h-3 text-slate-500" />
+                      <span className="flex items-center gap-1 mt-0.5 text-slate-500 dark:text-slate-400">
+                        <Mail className="w-3 h-3 text-slate-400" />
                         <span>{resource.owner.email}</span>
                       </span>
                     ) : (
@@ -659,50 +700,50 @@ export default function ResourceDetailsPage() {
         title={bookingSuccess ? 'Booking Request Confirmed' : `Request Booking: ${title}`}
       >
         {bookingSuccess ? (
-          <div className="space-y-5 text-sm text-slate-300 py-1">
-            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-400 mt-0.5" />
+          <div className="space-y-5 text-sm text-slate-700 dark:text-slate-300 py-1">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
               <div className="space-y-1">
-                <p className="font-semibold text-emerald-200">
+                <p className="font-semibold text-emerald-900 dark:text-emerald-200">
                   Request Submitted Successfully!
                 </p>
-                <p className="text-xs text-emerald-300/80 leading-relaxed">
+                <p className="text-xs text-emerald-700 dark:text-emerald-300/80 leading-relaxed">
                   Your reservation request is now pending review by the equipment custodian.
                   You can track status updates and approvals in your dashboard.
                 </p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3 text-xs">
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="text-slate-400">Request ID:</span>
-                <span className="font-mono text-slate-300">{bookingSuccess._id}</span>
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-3 text-xs">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Request ID:</span>
+                <span className="font-mono text-slate-800 dark:text-slate-300">{bookingSuccess._id}</span>
               </div>
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="text-slate-400">Status:</span>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Status:</span>
                 <Badge variant="warning" size="sm">
                   Pending Approval
                 </Badge>
               </div>
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="text-slate-400">Scheduled Date:</span>
-                <span className="text-white font-medium">{bookingDate}</span>
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Scheduled Date:</span>
+                <span className="text-slate-900 dark:text-white font-medium">{bookingDate}</span>
               </div>
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="text-slate-400">Time Window:</span>
-                <span className="text-white font-medium">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Time Window:</span>
+                <span className="text-slate-900 dark:text-white font-medium">
                   {startTime} – {endTime} ({userTimeZone})
                 </span>
               </div>
-              <div className="flex justify-between items-center pb-2 border-b border-slate-800">
-                <span className="text-slate-400">Units Requested:</span>
-                <span className="text-white font-medium">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-200 dark:border-slate-800">
+                <span className="text-slate-500 dark:text-slate-400">Units Requested:</span>
+                <span className="text-slate-900 dark:text-white font-medium">
                   {bookingSuccess.quantity || bookingQuantity} unit(s)
                 </span>
               </div>
               <div className="pt-1">
-                <span className="text-slate-400 block mb-1">Stated Purpose:</span>
-                <p className="text-slate-200 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 italic">
+                <span className="text-slate-500 dark:text-slate-400 block mb-1">Stated Purpose:</span>
+                <p className="text-slate-800 dark:text-slate-200 bg-white dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800/80 italic">
                   "{bookingSuccess.purpose || bookingPurpose}"
                 </p>
               </div>
@@ -739,16 +780,16 @@ export default function ResourceDetailsPage() {
         ) : (
           <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs sm:text-sm">
             {/* Resource summary header banner */}
-            <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between text-xs">
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between text-xs">
               <div>
-                <p className="font-semibold text-white">{title}</p>
-                <p className="text-slate-400 mt-0.5">
+                <p className="font-semibold text-slate-900 dark:text-white">{title}</p>
+                <p className="text-slate-500 dark:text-slate-400 mt-0.5">
                   {campus} • {building}
                 </p>
               </div>
               <div className="text-right">
-                <span className="text-slate-400 block text-[11px]">Capacity:</span>
-                <span className="text-blue-400 font-bold">
+                <span className="text-slate-500 dark:text-slate-400 block text-[11px]">Capacity:</span>
+                <span className="text-blue-600 dark:text-blue-400 font-bold">
                   {resource.availableQuantity !== undefined
                     ? `${resource.availableQuantity} of ${resource.quantity || 1} units available`
                     : `${resource.quantity || 1} units available`}
@@ -757,15 +798,15 @@ export default function ResourceDetailsPage() {
             </div>
 
             {/* Timezone pill */}
-            <div className="flex items-center gap-2 text-xs text-slate-400 px-1">
-              <Globe className="w-3.5 h-3.5 text-blue-400" />
-              <span>Times evaluated in your local timezone: <strong className="text-slate-300">{userTimeZone}</strong></span>
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 px-1">
+              <Globe className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>Times evaluated in your local timezone: <strong className="text-slate-800 dark:text-slate-300">{userTimeZone}</strong></span>
             </div>
 
             {/* Date Input */}
             <div className="space-y-1.5">
-              <label htmlFor="bookingDate" className="block text-xs font-medium text-slate-300">
-                Reservation Date <span className="text-rose-400">*</span>
+              <label htmlFor="bookingDate" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                Reservation Date <span className="text-rose-500">*</span>
               </label>
               <input
                 id="bookingDate"
@@ -774,15 +815,15 @@ export default function ResourceDetailsPage() {
                 value={bookingDate}
                 onChange={(e) => setBookingDate(e.target.value)}
                 required
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             {/* Start and End Times */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label htmlFor="startTime" className="block text-xs font-medium text-slate-300">
-                  Start Time <span className="text-rose-400">*</span>
+                <label htmlFor="startTime" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Start Time <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="startTime"
@@ -790,13 +831,13 @@ export default function ResourceDetailsPage() {
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="endTime" className="block text-xs font-medium text-slate-300">
-                  End Time <span className="text-rose-400">*</span>
+                <label htmlFor="endTime" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  End Time <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="endTime"
@@ -804,7 +845,7 @@ export default function ResourceDetailsPage() {
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -812,8 +853,8 @@ export default function ResourceDetailsPage() {
             {/* Quantity Input (if resource has more than 1 unit) */}
             {(resource.quantity || 1) > 1 && (
               <div className="space-y-1.5">
-                <label htmlFor="bookingQuantity" className="block text-xs font-medium text-slate-300">
-                  Quantity Required (Max: {resource.quantity}) <span className="text-rose-400">*</span>
+                <label htmlFor="bookingQuantity" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                  Quantity Required (Max: {resource.quantity}) <span className="text-rose-500">*</span>
                 </label>
                 <input
                   id="bookingQuantity"
@@ -823,15 +864,15 @@ export default function ResourceDetailsPage() {
                   value={bookingQuantity}
                   onChange={(e) => setBookingQuantity(e.target.value)}
                   required
-                  className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 />
               </div>
             )}
 
             {/* Purpose Textarea */}
             <div className="space-y-1.5">
-              <label htmlFor="bookingPurpose" className="block text-xs font-medium text-slate-300">
-                Research / Operational Purpose <span className="text-rose-400">*</span>
+              <label htmlFor="bookingPurpose" className="block text-xs font-medium text-slate-700 dark:text-slate-300">
+                Research / Operational Purpose <span className="text-rose-500">*</span>
               </label>
               <textarea
                 id="bookingPurpose"
@@ -842,7 +883,7 @@ export default function ResourceDetailsPage() {
                 onChange={(e) => setBookingPurpose(e.target.value)}
                 required
                 placeholder="Explain the project or course activity requiring this equipment/space..."
-                className="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+                className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
               />
               <p className="text-[11px] text-slate-500 text-right">
                 {bookingPurpose.length}/500 characters

@@ -19,6 +19,7 @@ export const CATEGORY_REGISTRY = {
       'Lunch Boxes',
       'Notebooks and Registers',
       'Folders and Files',
+      'Pens, Pencils & Stationery',
       'Other Essentials',
     ],
   },
@@ -40,6 +41,7 @@ export const CATEGORY_REGISTRY = {
       'Previous-Year Question Papers',
       'Practical Files',
       'Drawing Sheets and Project Files',
+      'Subject-Specific Books',
       'Other Books & Notes',
     ],
   },
@@ -72,6 +74,8 @@ export const CATEGORY_REGISTRY = {
       'Computer Mice and Keyboards',
       'Chargers and Adapters',
       'USB Drives',
+      'Keyboards & Mice',
+      'Headphones & Earphones',
       'Computer and Device Accessories',
       'Other Gadgets',
     ],
@@ -205,6 +209,19 @@ export const ALL_CATEGORIES = [
 
 export const CATEGORIES = ALL_CATEGORIES;
 
+export const CATEGORY_ALIASES = {
+  'Engineering Drawing & Design': 'Design, Drawing & Architecture',
+  'Design & Drawing': 'Design, Drawing & Architecture',
+  'Books & Materials': 'Books & Study Materials',
+  'Study Materials': 'Books & Study Materials',
+};
+
+export function normalizeCategory(category) {
+  if (!category || typeof category !== 'string') return category;
+  const trimmed = category.trim();
+  return CATEGORY_ALIASES[trimmed] || trimmed;
+}
+
 export const LOCATIONS = [
   'All Campuses',
   'Main Academic Campus',
@@ -214,12 +231,14 @@ export const LOCATIONS = [
 ];
 
 export function getSubcategoriesForCategory(category) {
-  const cat = CATEGORY_REGISTRY[category];
+  const canonical = normalizeCategory(category);
+  const cat = CATEGORY_REGISTRY[canonical];
   return cat ? cat.subcategories : ['General Resource', 'Other'];
 }
 
 export function categorySupportsAcademicFields(category) {
-  const cat = CATEGORY_REGISTRY[category];
+  const canonical = normalizeCategory(category);
+  const cat = CATEGORY_REGISTRY[canonical];
   return Boolean(cat?.hasAcademicFields);
 }
 

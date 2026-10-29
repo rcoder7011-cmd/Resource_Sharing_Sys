@@ -20,18 +20,24 @@ const matchNeeds = async (req, res, next) => {
     }
 
     const {
-      description = '',
-      category = '',
-      location = '',
-      resourceType = '',
+      description,
+      category,
+      location,
+      resourceType,
       startAt,
       endAt,
-      quantity = 1,
+      quantity,
       includeRescueBoost = true,
-    } = req.body;
+    } = req.body || {};
 
-    // Minimum requirement: either description, category, or location must be specified
-    if (!description && !category && !location && !resourceType) {
+    // Sanitize string inputs to prevent NoSQL operator injection and bounded length
+    const safeDescription = typeof description === 'string' ? description.slice(0, 500).trim() : '';
+    const safeCategory = typeof category === 'string' ? category.slice(0, 100).trim() : '';
+    const safeLocation = typeof location === 'string' ? location.slice(0, 100).trim() : '';
+    const safeResourceType = typeof resourceType === 'string' ? resourceType.slice(0, 50).trim() : '';
+
+    // Minimum requirement: either description, category, location, or resourceType must be specified
+    if (!safeDescription && !safeCategory && !safeLocation && !safeResourceType) {
       return res.status(400).json({
         success: false,
         message: 'Please provide at least a need description, category, or preferred location',
@@ -42,10 +48,10 @@ const matchNeeds = async (req, res, next) => {
     try {
       results = await findSmartMatches(
         {
-          description,
-          category,
-          location,
-          resourceType,
+          description: safeDescription,
+          category: safeCategory,
+          location: safeLocation,
+          resourceType: safeResourceType,
           startAt,
           endAt,
           quantity,
@@ -81,8 +87,9 @@ const matchNeeds = async (req, res, next) => {
  */
 const parseNeed = async (req, res, next) => {
   try {
-    const { text = '' } = req.body;
-    const parsed = parseNeedDescription(text);
+    const { text } = req.body || {};
+    const safeText = typeof text === 'string' ? text.slice(0, 500) : '';
+    const parsed = parseNeedDescription(safeText);
     return res.status(200).json({
       success: true,
       data: parsed,
@@ -96,4 +103,3 @@ module.exports = {
   matchNeeds,
   parseNeed,
 };
-

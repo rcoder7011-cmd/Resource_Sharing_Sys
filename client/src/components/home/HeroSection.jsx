@@ -49,7 +49,7 @@ export default function HeroSection() {
   return (
     <section
       ref={heroRef}
-      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-slate-900 bg-gradient-to-b from-slate-950 via-slate-950 to-slate-900/50"
+      className="relative overflow-hidden pt-12 pb-20 lg:pt-20 lg:pb-28 border-b border-slate-200 dark:border-slate-900 bg-gradient-to-b from-slate-50 via-white to-slate-100/50 dark:from-slate-950 dark:via-slate-950 dark:to-slate-900/50 transition-colors duration-200"
     >
       {/* Subtle background ambient gradients */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 pointer-events-none overflow-hidden opacity-30">
@@ -62,19 +62,19 @@ export default function HeroSection() {
           {/* Left Text Column */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
             {/* Trust Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 text-xs text-slate-300 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0"></span>
-              <span className="font-medium text-slate-300">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 shadow-sm transition-colors">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <span className="font-medium text-slate-800 dark:text-slate-300">
                 Institutional Resource Governance
               </span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-400">Labs, Makerspaces & Facilities</span>
+              <span className="text-slate-400 dark:text-slate-500">•</span>
+              <span className="text-slate-500 dark:text-slate-400">Labs, Makerspaces & Facilities</span>
             </div>
 
             {/* Headline */}
             <h1
               ref={headlineRef}
-              className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-white leading-[1.12]"
+              className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12] transition-colors"
             >
               Make Better Use of What We Already Have.
             </h1>
@@ -82,7 +82,7 @@ export default function HeroSection() {
             {/* Supporting Text */}
             <p
               ref={subtextRef}
-              className="text-base sm:text-lg text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed"
+              className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto lg:mx-0 leading-relaxed transition-colors"
             >
               Discover and share trusted spaces, equipment, and technical resources through a transparent, accountable process.
             </p>
@@ -114,17 +114,17 @@ export default function HeroSection() {
             </div>
 
             {/* Key trust badges */}
-            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-900 text-xs text-slate-400">
+            <div className="pt-6 grid grid-cols-3 gap-4 border-t border-slate-200 dark:border-slate-900 text-xs text-slate-600 dark:text-slate-400 transition-colors">
               <div className="flex items-center justify-center lg:justify-start gap-2">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Custodian Approvals</span>
               </div>
               <div className="flex items-center justify-center lg:justify-start gap-2">
-                <FlaskConical className="w-4 h-4 text-blue-400 shrink-0" />
+                <FlaskConical className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
                 <span>Verified Facilities</span>
               </div>
               <div className="flex items-center justify-center lg:justify-start gap-2">
-                <Cpu className="w-4 h-4 text-purple-400 shrink-0" />
+                <Cpu className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0" />
                 <span>Equipment Audit Trails</span>
               </div>
             </div>
@@ -134,15 +134,15 @@ export default function HeroSection() {
           <div ref={visualRef} className="lg:col-span-5">
             <div className="relative mx-auto max-w-md lg:max-w-none">
               {/* Outer decorative border frame */}
-              <div className="card-surface p-3.5 shadow-2xl relative">
+              <div className="card-surface p-3.5 shadow-xl dark:shadow-2xl relative">
                 {/* Main Featured Visual */}
-                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-950">
+                <div className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-950">
                   <img
                     src="https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=1000&q=80"
                     alt="Precision laboratory electron microscope workstation"
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
 
                   {/* On-image contextual overlay */}
                   <div className="absolute bottom-4 left-4 right-4 p-3.5 rounded-lg bg-slate-950/85 backdrop-blur-md border border-slate-800 text-xs space-y-1">
@@ -152,20 +152,20 @@ export default function HeroSection() {
                         Active Custody Log
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-slate-300">
                       Tier-2 Cleanroom • FE-SEM with EDX Elemental Analysis
                     </p>
                   </div>
                 </div>
 
                 {/* Floating Micro-Badge */}
-                <div className="absolute -bottom-4 -left-4 sm:left-4 p-3 rounded-xl bg-slate-900 border border-slate-700 shadow-xl hidden sm:flex items-center gap-3 text-xs">
-                  <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+                <div className="absolute -bottom-4 -left-4 sm:left-4 p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl hidden sm:flex items-center gap-3 text-xs transition-colors">
+                  <div className="w-8 h-8 rounded-lg bg-blue-600/15 dark:bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className="font-semibold text-white">Safe Custody Check</p>
-                    <p className="text-[10px] text-slate-400">Condition logged at handoff</p>
+                    <p className="font-semibold text-slate-900 dark:text-white">Safe Custody Check</p>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">Condition logged at handoff</p>
                   </div>
                 </div>
               </div>

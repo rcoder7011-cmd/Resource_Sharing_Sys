@@ -587,6 +587,233 @@ async function runMatchingTestSuite() {
   assert(parseRes.statusCode === 200, 'POST /api/recommendations/parse-need returns 200 OK');
   assert(parseRes.jsonResponse.data.inferredCategories.includes('Cameras'), 'parse-need extracts Cameras category');
 
+  // --- Test Suite 7: Phase 3 Student Need Matching & Academic Intelligence ---
+  console.log('\n--- Test Suite 7: Phase 3 Student Need Matching & Academic Intelligence ---');
+
+  // 1. Natural Language Scenario: Scientific calculator for exam
+  const calcNeed = parseNeedDescription('I need a scientific calculator for my maths exam tomorrow');
+  assert(calcNeed.inferredCategory === 'Student Essentials', 'Extracts Student Essentials for calculator query');
+  assert(calcNeed.itemKeywords.includes('Scientific Calculator'), 'Extracts "Scientific Calculator" specific item');
+  assert(calcNeed.inferredAcademic.subject === 'Mathematics & Calculus', 'Extracts "Mathematics & Calculus" academic subject');
+  assert(calcNeed.inferredIntents.includes('exam'), 'Extracts "exam" activity intent');
+
+  // 2. Natural Language Scenario: DSA textbook for CSE semester 3
+  const dsaNeed = parseNeedDescription('Looking for a second-hand DSA textbook for CSE semester 3');
+  assert(dsaNeed.inferredCategory === 'Books & Study Materials', 'Extracts Books & Study Materials for DSA query');
+  assert(dsaNeed.inferredAcademic.branch === 'CSE', 'Extracts "CSE" academic branch');
+  assert(dsaNeed.inferredAcademic.semester === 'Semester 3', 'Extracts "Semester 3" academic semester');
+  assert(dsaNeed.inferredAcademic.subject === 'Data Structures & Algorithms', 'Extracts "Data Structures & Algorithms" subject');
+
+  // 3. Natural Language Scenario: Mini drafter and drawing board
+  const drafterNeed = parseNeedDescription('Need a mini drafter and drawing board for engineering drawing');
+  assert(drafterNeed.inferredCategory === 'Design, Drawing & Architecture', 'Extracts Design, Drawing & Architecture');
+  assert(drafterNeed.itemKeywords.includes('Mini Drafter'), 'Extracts "Mini Drafter" item');
+  assert(drafterNeed.itemKeywords.includes('Drawing Board'), 'Extracts "Drawing Board" item');
+  assert(drafterNeed.inferredAcademic.subject === 'Engineering Drawing & Graphics', 'Extracts Engineering Drawing subject');
+
+  // 4. Natural Language Scenario: Laptop for project
+  const laptopNeed = parseNeedDescription('I need a laptop for a project');
+  assert(laptopNeed.inferredCategory === 'Computers', 'Extracts Computers for laptop query');
+  assert(laptopNeed.inferredResourceType === 'equipment', 'Infers resourceType "equipment"');
+  assert(laptopNeed.inferredIntents.includes('project'), 'Extracts "project" activity intent');
+
+  // 5. Natural Language Scenario: Lab equipment near campus
+  const labNeed = parseNeedDescription('Looking for lab equipment near my campus');
+  assert(labNeed.inferredCategories.includes('Laboratories'), 'Extracts Laboratories category for lab equipment');
+  assert(labNeed.inferredLocations.includes('Main Academic Campus'), 'Extracts "Main Academic Campus" from "near my campus"');
+
+  // 6. Natural Language Scenario: Quantity extraction
+  const qtyNeed = parseNeedDescription('Need 3 mini drafters for the graphics workshop');
+  assert(qtyNeed.inferredQuantity === 3, 'Extracts quantity 3 from "Need 3 mini drafters"');
+
+  // 7. Academic Metadata Scoring Boosting
+  const dsaBookResource = {
+    _id: new mongoose.Types.ObjectId(),
+    id: 'res_dsa_cormen',
+    title: 'Introduction to Algorithms (CLRS)',
+    description: 'Comprehensive DSA textbook covering algorithms, data structures, graphs, and sorting.',
+    category: 'Books & Study Materials',
+    subcategory: 'Engineering Textbooks',
+    academicMetadata: {
+      subject: 'Data Structures & Algorithms',
+      branch: 'Computer Science & Engineering (CSE)',
+      semester: 'Semester 3',
+      bookTitle: 'Introduction to Algorithms',
+      author: 'Thomas H. Cormen',
+    },
+    location: { campus: 'Main Academic Campus' },
+    quantity: 3,
+  };
+
+  const dsaScoreResult = scoreResourceMatch(
+    dsaBookResource,
+    { category: 'Books & Study Materials', quantity: 1 },
+    dsaNeed,
+    { totalCapacity: 3, currentlyBooked: 0, availableCapacity: 3 }
+  );
+
+  assert(dsaScoreResult.score >= 80, `DSA resource achieves high match score (${dsaScoreResult.score}/100)`);
+  assert(
+    dsaScoreResult.explanations.some((e) => e.includes('Data Structures & Algorithms')),
+    'Includes explanation for academic subject match'
+  );
+  assert(
+    dsaScoreResult.explanations.some((e) => e.includes('Computer Science & Engineering')),
+    'Includes explanation for academic branch match'
+  );
+  assert(
+    dsaScoreResult.explanations.some((e) => e.includes('Semester 3')),
+    'Includes explanation for academic semester match'
+  );
+
+  // 8. Grounded, Non-Fabricated Explanations Assertion
+  // Strict rule: Zero fake ratings, zero fake popularity, zero synthetic savings
+  const forbiddenPatterns = ['stars', 'rated', 'savings', 'trust score', 'popularity rank', 'saved $'];
+  const hasFabricatedExplanation = dsaScoreResult.explanations.some((exp) =>
+    forbiddenPatterns.some((pattern) => exp.toLowerCase().includes(pattern))
+  );
+  assert(!hasFabricatedExplanation, 'Recommendations contain strictly zero fabricated ratings, trust scores, or synthetic savings');
+
+  // 9. Hard Eligibility: Suspended Owner Exclusion
+  const suspendedOwnerId = new mongoose.Types.ObjectId();
+  const resSuspendedOwner = {
+    _id: new mongoose.Types.ObjectId(),
+    id: 'res_suspended_owner',
+    title: 'Casio fx-991ES Plus Scientific Calculator',
+    description: 'High precision scientific calculator for engineering examinations.',
+    category: 'Student Essentials',
+    subcategory: 'Calculators',
+    location: { campus: 'Main Academic Campus' },
+    quantity: 2,
+    availabilityStatus: 'available',
+    moderationStatus: 'approved',
+    owner: {
+      _id: suspendedOwnerId,
+      name: 'Suspended Student',
+      email: 'suspended@campus.edu',
+      status: 'suspended',
+      isSuspended: true,
+    },
+    createdAt: new Date(),
+  };
+
+  resourceRepo.set(resSuspendedOwner._id.toString(), resSuspendedOwner);
+
+  const suspendedTestResult = await findSmartMatches({
+    description: 'I need a scientific calculator for maths exam',
+    category: 'Student Essentials',
+  });
+  const matchedResourceIds = suspendedTestResult.matches.map((m) => m.resource.id);
+  const altResourceIds = suspendedTestResult.alternatives.map((a) => a.resource.id);
+  assert(
+    !matchedResourceIds.includes(resSuspendedOwner.id) && !altResourceIds.includes(resSuspendedOwner.id),
+    'Resources owned by suspended users are strictly excluded from both matches and alternatives'
+  );
+
+  // Clean up fixture
+  resourceRepo.delete(resSuspendedOwner._id.toString());
+
+  // 10. Multi-unit booking capacity constraint and alternative diversion
+  const multiUnitCalc = {
+    _id: new mongoose.Types.ObjectId(),
+    id: 'res_multi_calc',
+    title: 'Casio Scientific Calculator Kit',
+    description: 'Calculators for mathematics examinations and tutorials.',
+    category: 'Student Essentials',
+    subcategory: 'Calculators',
+    location: { campus: 'Main Academic Campus' },
+    quantity: 5, // 5 units total
+    availabilityStatus: 'available',
+    moderationStatus: 'approved',
+    owner: fixtureOwner,
+    createdAt: new Date(),
+  };
+  resourceRepo.set(multiUnitCalc._id.toString(), multiUnitCalc);
+
+  // Add 3 bookings consuming 3 of the 5 units for slot
+  const calcBooking = {
+    _id: new mongoose.Types.ObjectId(),
+    resource: multiUnitCalc._id,
+    status: 'approved',
+    quantity: 3,
+    startAt: new Date('2026-11-04T10:00:00Z'),
+    endAt: new Date('2026-11-04T14:00:00Z'),
+  };
+  bookingRepo.set(calcBooking._id.toString(), calcBooking);
+
+  // Request 2 units (available = 5 - 3 = 2 units) -> Should match!
+  const fitResult = await findSmartMatches({
+    description: 'scientific calculator for maths',
+    category: 'Student Essentials',
+    startAt: '2026-11-04T10:00:00Z',
+    endAt: '2026-11-04T14:00:00Z',
+    quantity: 2,
+  });
+  const fitMatch = fitResult.matches.find((m) => m.resource._id.toString() === multiUnitCalc._id.toString());
+  assert(fitMatch !== undefined, 'Multi-unit resource with 2 remaining units matches request for 2 units');
+  assert(fitMatch && fitMatch.capacity.availableCapacity === 2, 'Available capacity reflects 2 units remaining');
+
+  // Request 3 units (available = 2 < 3) -> Should be diverted to alternatives!
+  const overResult = await findSmartMatches({
+    description: 'scientific calculator for maths',
+    category: 'Student Essentials',
+    startAt: '2026-11-04T10:00:00Z',
+    endAt: '2026-11-04T14:00:00Z',
+    quantity: 3,
+  });
+  const overMatch = overResult.matches.find((m) => m.resource._id.toString() === multiUnitCalc._id.toString());
+  const overAlt = overResult.alternatives.find((a) => a.resource._id.toString() === multiUnitCalc._id.toString());
+  assert(overMatch === undefined, 'Resource with insufficient capacity (2 available vs 3 requested) excluded from direct matches');
+  assert(overAlt !== undefined, 'Capacity-constrained resource diverted to alternative recommendations');
+  assert(overAlt && overAlt.constraintReason.includes('Capacity unavailable'), 'Alternative carries truthful capacity constraint explanation');
+
+  // Clean up
+  resourceRepo.delete(multiUnitCalc._id.toString());
+  bookingRepo.delete(calcBooking._id.toString());
+
+  // --- Test Suite 8: Security, Sanitization & Edge-Case Regressions ---
+  console.log('\n--- Test Suite 8: Security, Sanitization & Edge-Case Regressions ---');
+
+  // 1. NoSQL operator injection in description safely neutralized
+  const { req: injReq, res: injRes } = createMockReqRes({
+    body: { description: { $ne: null } },
+  });
+  await matchNeeds(injReq, injRes);
+  assert(injRes.statusCode === 400, 'Rejects NoSQL operator object in description and returns 400 Bad Request');
+
+  // 2. NoSQL operator injection in parse-need text safely neutralized
+  const { req: injParseReq, res: injParseRes } = createMockReqRes({
+    body: { text: { $gt: '' } },
+  });
+  await parseNeed(injParseReq, injParseRes);
+  assert(injParseRes.statusCode === 200, 'parseNeed safely handles non-string object without crashing');
+  assert(injParseRes.jsonResponse.data.tokens.length === 0, 'Non-string payload produces empty token array safely');
+
+  // 3. Overlong description (> 1000 chars) bounded safely to 500 chars
+  const superLongDesc = 'I need a scientific calculator for maths exam '.repeat(30);
+  const overlongParse = parseNeedDescription(superLongDesc);
+  assert(overlongParse.rawText.length > 500, 'Raw text reflects long input');
+  assert(overlongParse.inferredCategory === 'Student Essentials', 'Overlong input parses category safely');
+
+  // 4. Semester number is NOT misinterpreted as quantity
+  const semCheck = parseNeedDescription('Looking for a second-hand DSA textbook for CSE semester 3');
+  assert(semCheck.inferredQuantity === null, 'Semester 3 is NOT misinterpreted as quantity 3');
+
+  // 5. Academic year is NOT misinterpreted as quantity
+  const yrCheck = parseNeedDescription('Need notes for 2nd year civil engineering');
+  assert(yrCheck.inferredQuantity === null, '2nd year is NOT misinterpreted as quantity 2');
+
+  // 6. Model numbers are NOT misinterpreted as quantity
+  const modelCheck = parseNeedDescription('looking for casio fx-991 calculator');
+  assert(modelCheck.inferredQuantity === null, 'Model number 991 is NOT misinterpreted as quantity 991');
+
+  // 7. Empty query returns clean 400 response
+  const { req: blankReq, res: blankRes } = createMockReqRes({
+    body: { description: '   ' },
+  });
+  await matchNeeds(blankReq, blankRes);
+  assert(blankRes.statusCode === 400, 'Whitespace-only description returns 400 Bad Request');
+
   // --- Final Results ---
   console.log('\n====================================================');
   console.log(`Part 13 Test Summary: Passed: ${testsPassed}, Failed: ${testsFailed}`);

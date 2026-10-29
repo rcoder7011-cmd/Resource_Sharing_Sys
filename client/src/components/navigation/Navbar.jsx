@@ -4,6 +4,7 @@ import { Menu, X, Box, User, LogOut, LayoutDashboard, LogIn, PackagePlus, Shield
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
 import Button from '../common/Button';
+import ThemeToggle from '../common/ThemeToggle';
 import NotificationBell from '../notifications/NotificationBell';
 import { APP_NAME } from '../../utils/constants';
 
@@ -37,9 +38,9 @@ export default function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+    <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-slate-800/80 bg-white/90 dark:bg-slate-950/80 backdrop-blur-md transition-colors duration-200">
       {/* Institutional Notice Bar */}
-      <div className="bg-slate-900 border-b border-slate-800 text-xs py-1.5 px-4 text-center text-slate-400 flex items-center justify-center gap-2">
+      <div className="bg-slate-100 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs py-1.5 px-4 text-center text-slate-600 dark:text-slate-400 flex items-center justify-center gap-2 transition-colors duration-200">
         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
         <span>
           Institutional Resource Sharing Network • Verified & Operational
@@ -57,10 +58,10 @@ export default function Navbar() {
               <Box className="w-5 h-5" />
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-lg tracking-tight text-white leading-none">
+              <span className="font-bold text-lg tracking-tight text-slate-900 dark:text-white leading-none transition-colors">
                 {APP_NAME}
               </span>
-              <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 mt-0.5">
+              <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-500 dark:text-slate-400 mt-0.5">
                 Resource Sharing
               </span>
             </div>
@@ -76,8 +77,8 @@ export default function Navbar() {
                   to={link.path}
                   className={`px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? 'text-white bg-slate-800/70 font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-900/60'
+                      ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-slate-800/70 font-semibold'
+                      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900/60'
                   }`}
                 >
                   {link.name}
@@ -87,7 +88,10 @@ export default function Navbar() {
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="hidden md:flex items-center space-x-2.5">
+            {/* Theme Toggle (Light / Dark Mode) */}
+            <ThemeToggle />
+
             {isAuthenticated ? (
               <>
                 <Button
@@ -105,7 +109,7 @@ export default function Navbar() {
                 {/* Real-time In-App Chat & Messages Button */}
                 <Link
                   to="/chat"
-                  className="relative p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+                  className="relative p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-800"
                   title="Messages & Pickup Coordination"
                 >
                   <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -118,9 +122,9 @@ export default function Navbar() {
 
                 <Link
                   to="/dashboard"
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs text-slate-200 transition-colors"
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 text-xs text-slate-800 dark:text-slate-200 transition-colors"
                 >
-                  <div className="w-5 h-5 rounded-full bg-blue-600/30 text-blue-400 flex items-center justify-center font-bold text-[10px]">
+                  <div className="w-5 h-5 rounded-full bg-blue-600/20 dark:bg-blue-600/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-[10px]">
                     <User className="w-3 h-3" />
                   </div>
                   <span className="font-medium max-w-[120px] truncate">
@@ -154,7 +158,7 @@ export default function Navbar() {
                   onClick={handleLogout}
                   title="Sign Out"
                   aria-label="Sign Out"
-                  className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-900 transition-colors"
+                  className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -163,7 +167,7 @@ export default function Navbar() {
               <>
                 <Link
                   to="/login"
-                  className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-900 transition-colors flex items-center gap-1.5"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors flex items-center gap-1.5"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Sign In</span>
@@ -179,13 +183,14 @@ export default function Navbar() {
             </Button>
           </div>
 
-          {/* Mobile Right Bar (Notification Bell + Hamburger) */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Right Bar (ThemeToggle + Bell + Hamburger) */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <ThemeToggle />
             {isAuthenticated && <NotificationBell />}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               aria-expanded={mobileMenuOpen}
               aria-label="Toggle navigation menu"
             >
@@ -197,26 +202,32 @@ export default function Navbar() {
 
       {/* Mobile Navigation Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-slate-950/95 backdrop-blur-lg px-4 pt-3 pb-6 space-y-2">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-950/95 backdrop-blur-lg px-4 pt-3 pb-6 space-y-2 transition-colors">
           {/* User Status Bar in Mobile Menu */}
           {isAuthenticated && (
-            <div className="p-3 mb-2 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div className="p-3 mb-2 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-full bg-blue-600/30 text-blue-400 flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-full bg-blue-600/20 dark:bg-blue-600/30 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs">
                   <User className="w-4 h-4" />
                 </div>
                 <div className="text-xs">
-                  <p className="font-semibold text-white">{user?.name}</p>
-                  <p className="text-slate-400 text-[10px]">{user?.email}</p>
+                  <p className="font-semibold text-slate-900 dark:text-white">{user?.name}</p>
+                  <p className="text-slate-500 dark:text-slate-400 text-[10px]">{user?.email}</p>
                 </div>
               </div>
-              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+              <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                 {user?.role || 'user'}
               </span>
             </div>
           )}
 
-          <nav className="flex flex-col space-y-1">
+          {/* Theme switcher row in mobile menu */}
+          <div className="flex items-center justify-between p-3 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Display Theme</span>
+            <ThemeToggle showLabel />
+          </div>
+
+          <nav className="flex flex-col space-y-1 pt-1">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
@@ -224,8 +235,8 @@ export default function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   isActive(link.path)
-                    ? 'text-white bg-slate-800 font-semibold'
-                    : 'text-slate-300 hover:text-white hover:bg-slate-900'
+                    ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-slate-800 font-semibold'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                 }`}
               >
                 {link.name}
@@ -237,7 +248,7 @@ export default function Navbar() {
                 <Link
                   to="/create-resource"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-2.5 rounded-lg text-sm font-medium text-blue-400 hover:text-white hover:bg-slate-900 flex items-center gap-2"
+                  className="px-4 py-2.5 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-white hover:bg-blue-50 dark:hover:bg-slate-900 flex items-center gap-2"
                 >
                   <PackagePlus className="w-4 h-4" />
                   <span>List a Resource</span>
@@ -248,12 +259,12 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-between ${
                     isActive('/chat')
-                      ? 'text-white bg-slate-800 font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-900'
+                      ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-slate-800 font-semibold'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                   }`}
                 >
                   <span className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-blue-400" />
+                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                     <span>Messages & Coordination</span>
                   </span>
                   {Boolean(unreadChatCount && unreadChatCount > 0) && (
@@ -268,8 +279,8 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                     isActive('/dashboard')
-                      ? 'text-white bg-slate-800 font-semibold'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-900'
+                      ? 'text-blue-600 dark:text-white bg-blue-50 dark:bg-slate-800 font-semibold'
+                      : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-900'
                   }`}
                 >
                   Dashboard
@@ -279,7 +290,7 @@ export default function Navbar() {
                   <Link
                     to="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-2.5 rounded-lg text-sm font-semibold text-purple-400 hover:text-white hover:bg-slate-900 flex items-center gap-2"
+                    className="px-4 py-2.5 rounded-lg text-sm font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-white hover:bg-purple-50 dark:hover:bg-slate-900 flex items-center gap-2"
                   >
                     <ShieldCheck className="w-4 h-4" />
                     <span>Admin Portal</span>
@@ -289,7 +300,7 @@ export default function Navbar() {
             )}
           </nav>
 
-          <div className="pt-4 border-t border-slate-800/80 flex flex-col gap-2.5">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex flex-col gap-2.5">
             <Button
               to="/resources"
               variant="secondary"
@@ -304,7 +315,7 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-500/40 text-rose-300 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-slate-200 dark:border-slate-800 hover:border-rose-300 dark:hover:border-rose-500/40 text-rose-600 dark:text-rose-300 text-sm font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Sign Out</span>

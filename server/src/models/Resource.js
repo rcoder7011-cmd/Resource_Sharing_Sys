@@ -45,6 +45,12 @@ const resourceSchema = new mongoose.Schema(
         maxlength: [100, 'Branch cannot exceed 100 characters'],
         default: '',
       },
+      department: {
+        type: String,
+        trim: true,
+        maxlength: [100, 'Department cannot exceed 100 characters'],
+        default: '',
+      },
       course: {
         type: String,
         trim: true,
@@ -55,6 +61,18 @@ const resourceSchema = new mongoose.Schema(
         type: String,
         trim: true,
         maxlength: [50, 'Semester cannot exceed 50 characters'],
+        default: '',
+      },
+      academicYear: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'Academic year cannot exceed 50 characters'],
+        default: '',
+      },
+      classLevel: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'Class level cannot exceed 50 characters'],
         default: '',
       },
       bookTitle: {
@@ -283,6 +301,22 @@ resourceSchema.virtual('type').get(function () {
   return this.resourceType === 'space' ? 'Facility Space' : 'Specialized Equipment';
 });
 
+// Virtual field 'generalLocation' mapping to location.campus for flexible query & display
+resourceSchema.virtual('generalLocation').get(function () {
+  return this.location?.campus || 'Main Academic Campus';
+}).set(function (val) {
+  if (!this.location) {
+    this.location = { campus: val, building: 'Main Facility', room: 'General Access' };
+  } else {
+    this.location.campus = val;
+  }
+});
+
+// Virtual field 'class' mapping to academicMetadata.classLevel
+resourceSchema.virtual('academicMetadata.class').get(function () {
+  return this.academicMetadata?.classLevel || '';
+});
+
 // Compound and text indexes for performant searching and filtering
 resourceSchema.index({
   title: 'text',
@@ -291,6 +325,8 @@ resourceSchema.index({
   subcategory: 'text',
   'academicMetadata.subject': 'text',
   'academicMetadata.branch': 'text',
+  'academicMetadata.course': 'text',
+  'academicMetadata.department': 'text',
   'academicMetadata.bookTitle': 'text',
   'academicMetadata.author': 'text',
 });

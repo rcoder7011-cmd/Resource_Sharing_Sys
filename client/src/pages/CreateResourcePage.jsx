@@ -43,8 +43,11 @@ export default function CreateResourcePage() {
     academicMetadata: {
       subject: '',
       branch: 'Computer Science & Engineering (CSE)',
+      department: '',
       course: '',
       semester: '1st Semester (Year 1)',
+      academicYear: '',
+      classLevel: '',
       bookTitle: '',
       author: '',
       edition: '',
@@ -319,7 +322,7 @@ export default function CreateResourcePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
-                    <label htmlFor="acad-branch" className="block text-xs font-medium text-slate-300 mb-1">
+                    <label htmlFor="acad-branch" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Academic Branch / Department
                     </label>
                     <select
@@ -328,7 +331,7 @@ export default function CreateResourcePage() {
                       value={formData.academicMetadata.branch}
                       onChange={handleAcademicChange}
                       disabled={isSubmitting}
-                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {branchOptions.map((b) => (
                         <option key={b} value={b}>
@@ -339,8 +342,8 @@ export default function CreateResourcePage() {
                   </div>
 
                   <div>
-                    <label htmlFor="acad-semester" className="block text-xs font-medium text-slate-300 mb-1">
-                      Semester / Year
+                    <label htmlFor="acad-semester" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Semester
                     </label>
                     <select
                       id="acad-semester"
@@ -348,7 +351,7 @@ export default function CreateResourcePage() {
                       value={formData.academicMetadata.semester}
                       onChange={handleAcademicChange}
                       disabled={isSubmitting}
-                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       {semesterOptions.map((s) => (
                         <option key={s} value={s}>
@@ -359,7 +362,7 @@ export default function CreateResourcePage() {
                   </div>
 
                   <div>
-                    <label htmlFor="acad-subject" className="block text-xs font-medium text-slate-300 mb-1">
+                    <label htmlFor="acad-subject" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Subject / Course Name
                     </label>
                     <input
@@ -370,12 +373,28 @@ export default function CreateResourcePage() {
                       onChange={handleAcademicChange}
                       disabled={isSubmitting}
                       placeholder="e.g. Data Structures & Algorithms, Fluid Mechanics"
-                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="acad-course" className="block text-xs font-medium text-slate-300 mb-1">
+                    <label htmlFor="acad-bookTitle" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Book / Material Title
+                    </label>
+                    <input
+                      id="acad-bookTitle"
+                      name="bookTitle"
+                      type="text"
+                      value={formData.academicMetadata.bookTitle}
+                      onChange={handleAcademicChange}
+                      disabled={isSubmitting}
+                      placeholder="e.g. Higher Engineering Mathematics"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="acad-course" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Degree / Programme
                     </label>
                     <input
@@ -386,12 +405,28 @@ export default function CreateResourcePage() {
                       onChange={handleAcademicChange}
                       disabled={isSubmitting}
                       placeholder="e.g. B.Tech, B.Arch, BCA, M.Tech"
-                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="acad-author" className="block text-xs font-medium text-slate-300 mb-1">
+                    <label htmlFor="acad-classLevel" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Class Level / Academic Year
+                    </label>
+                    <input
+                      id="acad-classLevel"
+                      name="classLevel"
+                      type="text"
+                      value={formData.academicMetadata.classLevel}
+                      onChange={handleAcademicChange}
+                      disabled={isSubmitting}
+                      placeholder="e.g. 1st Year, 2nd Year, 2025-2026"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="acad-author" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                       Author / Notes Creator
                     </label>
                     <input
@@ -402,14 +437,14 @@ export default function CreateResourcePage() {
                       onChange={handleAcademicChange}
                       disabled={isSubmitting}
                       placeholder="e.g. Dr. B.S. Grewal / Class Topper"
-                      className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label htmlFor="acad-edition" className="block text-xs font-medium text-slate-300 mb-1">
-                        Edition / Year
+                      <label htmlFor="acad-edition" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        Edition
                       </label>
                       <input
                         id="acad-edition"
@@ -419,11 +454,11 @@ export default function CreateResourcePage() {
                         onChange={handleAcademicChange}
                         disabled={isSubmitting}
                         placeholder="e.g. 44th Edition"
-                        className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                     <div>
-                      <label htmlFor="acad-isbn" className="block text-xs font-medium text-slate-300 mb-1">
+                      <label htmlFor="acad-isbn" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                         ISBN (Optional)
                       </label>
                       <input
@@ -434,7 +469,7 @@ export default function CreateResourcePage() {
                         onChange={handleAcademicChange}
                         disabled={isSubmitting}
                         placeholder="e.g. 978-8193328491"
-                        className="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                     </div>
                   </div>

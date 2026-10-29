@@ -1,21 +1,31 @@
+const { AsyncLocalStorage } = require('async_hooks');
 const mongoose = require('mongoose');
 const Resource = require('../models/Resource');
 const Booking = require('../models/Booking');
 
 const isDatabaseConnected = () => mongoose.connection.readyState === 1;
 
-// Asynchronous per-resource mutex to prevent race conditions during concurrent bookings
+// Asynchronous per-resource mutex with re-entrant support to prevent self-deadlocks
 const resourceLocks = new Map();
+const lockStorage = new AsyncLocalStorage();
 
 /**
  * Execute an async function within a per-resource mutual exclusion lock
- * Guarantees serial execution of capacity checks and updates for a given resource
+ * Guarantees serial execution of capacity checks and updates for a given resource.
+ * Re-entrant: If the current async execution context already holds the lock for this
+ * resourceId, it executes fn() directly without self-deadlocking.
  * @param {string|mongoose.Types.ObjectId} resourceId
  * @param {Function} fn - Async operation to execute exclusively
  */
 async function withResourceLock(resourceId, fn) {
   if (!resourceId) return fn();
   const key = resourceId.toString();
+
+  // Check if current async call chain already holds this lock (re-entrancy check)
+  const currentHeld = lockStorage.getStore();
+  if (currentHeld && currentHeld.has(key)) {
+    return await fn();
+  }
 
   while (resourceLocks.has(key)) {
     try {
@@ -31,8 +41,11 @@ async function withResourceLock(resourceId, fn) {
   });
   resourceLocks.set(key, lockPromise);
 
+  const nextHeld = new Set(currentHeld || []);
+  nextHeld.add(key);
+
   try {
-    return await fn();
+    return await lockStorage.run(nextHeld, () => fn());
   } finally {
     resourceLocks.delete(key);
     releaseLock();

@@ -152,41 +152,77 @@ const createBooking = async (req, res, next) => {
       });
     }
 
-    // 8. Create booking in pending status
-    const booking = await Booking.create({
-      resource: resource._id,
-      requester: req.user._id,
-      owner: resource.owner,
-      startAt: startDate,
-      endAt: endDate,
-      quantity: parsedQuantity,
-      purpose: purpose.trim(),
-      status: 'pending',
-    });
+    return await withResourceLock(targetResourceId, async () => {
+      // Re-verify resource existence and active status under lock
+      const freshResource = await Resource.findById(targetResourceId);
+      if (!freshResource || freshResource.availabilityStatus !== 'available') {
+        return res.status(400).json({
+          success: false,
+          message: `Resource is currently unavailable for new bookings`,
+        });
+      }
 
-    // Populate resource and owner information for client convenience
-    await booking.populate([
-      { path: 'resource', select: 'title images category location quantity availabilityStatus' },
-      { path: 'owner', select: 'name email' },
-      { path: 'requester', select: 'name email' },
-    ]);
+      // Check for duplicate booking by the SAME requester:
+      // 1. User already has a confirmed/active reservation (approved or checked_in) in this overlapping interval
+      // 2. User already submitted an identical pending request (double-submission prevention)
+      const existingDuplicates = await Booking.find({
+        resource: freshResource._id,
+        requester: req.user._id,
+        status: { $in: ['pending', 'approved', 'checked_in'] },
+        startAt: { $lt: endDate },
+        endAt: { $gt: startDate },
+      });
 
-    // Part 7: Notify resource owner about new booking request
-    createAndSendNotification({
-      recipient: booking.owner,
-      sender: req.user._id,
-      type: 'booking_created',
-      title: 'New Booking Request',
-      message: `${req.user.name || 'A campus member'} requested booking for "${resource.title}".`,
-      booking: booking._id,
-      resource: resource._id,
-      link: '/dashboard?tab=incoming-requests',
-    }).catch(() => {});
+      const hasBlockingDuplicate = existingDuplicates.some((b) => {
+        if (b.status === 'approved' || b.status === 'checked_in') return true;
+        const bStart = new Date(b.startAt).getTime();
+        const bEnd = new Date(b.endAt).getTime();
+        return bStart === startDate.getTime() && bEnd === endDate.getTime();
+      });
 
-    return res.status(201).json({
-      success: true,
-      message: 'Booking request submitted successfully. Awaiting custodian approval.',
-      data: booking,
+      if (hasBlockingDuplicate) {
+        return res.status(409).json({
+          success: false,
+          message: 'You already have an active or pending reservation for this resource during this time. Duplicate submission prevented.',
+        });
+      }
+
+      // 8. Create booking in pending status
+      const booking = await Booking.create({
+        resource: freshResource._id,
+        requester: req.user._id,
+        owner: freshResource.owner,
+        startAt: startDate,
+        endAt: endDate,
+        quantity: parsedQuantity,
+        purpose: purpose.trim(),
+        status: 'pending',
+      });
+
+      // Populate resource and owner information for client convenience
+      await booking.populate([
+        { path: 'resource', select: 'title images category location quantity availabilityStatus' },
+        { path: 'owner', select: 'name email' },
+        { path: 'requester', select: 'name email' },
+      ]);
+
+      // Part 7: Notify resource owner about new booking request
+      createAndSendNotification({
+        recipient: booking.owner,
+        sender: req.user._id,
+        type: 'booking_created',
+        title: 'New Booking Request',
+        message: `${req.user.name || 'A campus member'} requested booking for "${freshResource.title}".`,
+        booking: booking._id,
+        resource: freshResource._id,
+        link: '/dashboard?tab=incoming-requests',
+      }).catch(() => {});
+
+      return res.status(201).json({
+        success: true,
+        message: 'Booking request submitted successfully. Awaiting custodian approval.',
+        data: booking,
+      });
     });
   } catch (error) {
     next(error);
@@ -501,80 +537,141 @@ const approveBooking = async (req, res, next) => {
     }
 
     return await withResourceLock(booking.resource, async () => {
-      // Re-fetch latest booking document to prevent duplicate approvals
-      const currentBooking = await Booking.findById(id);
-      if (!currentBooking) {
-        return res.status(404).json({
-          success: false,
-          message: 'Booking not found',
-        });
+      let session = null;
+      if (
+        mongoose.connection.readyState === 1 &&
+        mongoose.connection.client &&
+        typeof mongoose.connection.client.startSession === 'function'
+      ) {
+        try {
+          const s = await mongoose.startSession();
+          if (s && typeof s.startTransaction === 'function') {
+            try {
+              s.startTransaction();
+              session = s;
+            } catch (txErr) {
+              const isUnsupported =
+                txErr.message?.includes('Transaction numbers are only allowed on a replica set') ||
+                txErr.message?.includes('Transactions are not supported') ||
+                txErr.message?.includes('replica set') ||
+                txErr.code === 20;
+              if (isUnsupported) {
+                session = null;
+              } else {
+                throw txErr;
+              }
+            }
+          }
+        } catch (sessErr) {
+          const isUnsupported =
+            sessErr.message?.includes('Transaction numbers are only allowed on a replica set') ||
+            sessErr.message?.includes('Transactions are not supported') ||
+            sessErr.message?.includes('replica set') ||
+            sessErr.message?.includes('not supported') ||
+            sessErr.code === 20;
+          if (isUnsupported) {
+            session = null;
+          } else {
+            throw sessErr;
+          }
+        }
       }
 
-      if (currentBooking.status === 'approved') {
-        return res.status(400).json({
-          success: false,
-          message: 'This booking is already approved',
+      try {
+        const queryOptions = session ? { session } : {};
+
+        // Re-fetch latest booking document to prevent duplicate approvals
+        const currentBooking = await Booking.findById(id, null, queryOptions);
+        if (!currentBooking) {
+          if (session) await session.abortTransaction();
+          return res.status(404).json({
+            success: false,
+            message: 'Booking not found',
+          });
+        }
+
+        if (currentBooking.status === 'approved') {
+          if (session) await session.abortTransaction();
+          return res.status(400).json({
+            success: false,
+            message: 'This booking is already approved',
+          });
+        }
+
+        if (currentBooking.status !== 'pending') {
+          if (session) await session.abortTransaction();
+          return res.status(400).json({
+            success: false,
+            message: `Cannot approve a booking with status '${currentBooking.status}'`,
+          });
+        }
+
+        // Overlap Check & Capacity Management:
+        // Two intervals [A_start, A_end] and [B_start, B_end] overlap if and only if:
+        // A_start < B_end AND A_end > B_start.
+        // Note: If A_end === B_start (adjacent), they do NOT overlap.
+        const overlappingBookings = await Booking.find({
+          resource: currentBooking.resource,
+          status: { $in: ['approved', 'checked_in'] },
+          _id: { $ne: currentBooking._id },
+          startAt: { $lt: currentBooking.endAt },
+          endAt: { $gt: currentBooking.startAt },
+        }, null, queryOptions);
+
+        const totalCapacity = resource.quantity || 1;
+        const requestedQuantity = currentBooking.quantity || 1;
+        const currentlyBookedQuantity = overlappingBookings.reduce(
+          (sum, b) => sum + (b.quantity || 1),
+          0
+        );
+
+        if (currentlyBookedQuantity + requestedQuantity > totalCapacity) {
+          if (session) await session.abortTransaction();
+          const availableCapacity = Math.max(0, totalCapacity - currentlyBookedQuantity);
+          return res.status(409).json({
+            success: false,
+            message: `Cannot approve booking: overlapping confirmed bookings exceed total resource capacity. Total capacity: ${totalCapacity}, currently booked: ${currentlyBookedQuantity}, available: ${availableCapacity}, requested: ${requestedQuantity}.`,
+          });
+        }
+
+        currentBooking.status = 'approved';
+        currentBooking.reviewedAt = new Date();
+        await currentBooking.save(queryOptions);
+
+        if (session) {
+          await session.commitTransaction();
+        }
+
+        // Automatically sync and update resource availability in MongoDB
+        await syncResourceAvailability(currentBooking.resource);
+
+        // Part 7: Notify borrower of booking approval
+        createAndSendNotification({
+          recipient: currentBooking.requester,
+          sender: req.user._id,
+          type: 'booking_approved',
+          title: 'Booking Request Approved',
+          message: `Your booking for "${resource.title}" was approved by the custodian.`,
+          booking: currentBooking._id,
+          resource: currentBooking.resource,
+          link: '/dashboard?tab=my-bookings',
+        }).catch(() => {});
+
+        return res.status(200).json({
+          success: true,
+          message: 'Booking request approved successfully',
+          data: currentBooking,
         });
+      } catch (opErr) {
+        if (session) {
+          try { await session.abortTransaction(); } catch {}
+        }
+        throw opErr;
+      } finally {
+        if (session) {
+          try { await session.endSession(); } catch {}
+        }
       }
-
-      if (currentBooking.status !== 'pending') {
-        return res.status(400).json({
-          success: false,
-          message: `Cannot approve a booking with status '${currentBooking.status}'`,
-        });
-      }
-
-      // Overlap Check & Capacity Management:
-      // Two intervals [A_start, A_end] and [B_start, B_end] overlap if and only if:
-      // A_start < B_end AND A_end > B_start.
-      // Note: If A_end === B_start (adjacent), they do NOT overlap.
-      const overlappingBookings = await Booking.find({
-        resource: currentBooking.resource,
-        status: { $in: ['approved', 'checked_in'] },
-        _id: { $ne: currentBooking._id },
-        startAt: { $lt: currentBooking.endAt },
-        endAt: { $gt: currentBooking.startAt },
-      });
-
-      const totalCapacity = resource.quantity || 1;
-      const requestedQuantity = currentBooking.quantity || 1;
-      const currentlyBookedQuantity = overlappingBookings.reduce(
-        (sum, b) => sum + (b.quantity || 1),
-        0
-      );
-
-      if (currentlyBookedQuantity + requestedQuantity > totalCapacity) {
-        const availableCapacity = Math.max(0, totalCapacity - currentlyBookedQuantity);
-        return res.status(409).json({
-          success: false,
-          message: `Cannot approve booking: overlapping confirmed bookings exceed total resource capacity. Total capacity: ${totalCapacity}, currently booked: ${currentlyBookedQuantity}, available: ${availableCapacity}, requested: ${requestedQuantity}.`,
-        });
-      }
-
-      currentBooking.status = 'approved';
-      currentBooking.reviewedAt = new Date();
-      await currentBooking.save();
-
-      // Automatically sync and update resource availability in MongoDB
-      await syncResourceAvailability(currentBooking.resource);
-
-      // Part 7: Notify borrower of booking approval
-      createAndSendNotification({
-        recipient: currentBooking.requester,
-        sender: req.user._id,
-        type: 'booking_approved',
-        title: 'Booking Request Approved',
-        message: `Your booking for "${resource.title}" was approved by the custodian.`,
-        booking: currentBooking._id,
-        resource: currentBooking.resource,
-        link: '/dashboard?tab=my-bookings',
-      }).catch(() => {});
-
-      return res.status(200).json({
-        success: true,
-        message: 'Booking request approved successfully',
-        data: currentBooking,
-      });
     });
   } catch (error) {
     next(error);

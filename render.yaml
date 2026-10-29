@@ -23,4 +23,16 @@ services:
         value: 1d
       - key: ENABLE_CUSTOM_DNS
         value: "false" # Disabled in production Linux container to respect platform DNS
+      # Note: Render Free plan uses ephemeral disk (wiped on redeploy/sleep).
+      # For true persistent storage across redeployments:
+      # 1. Upgrade plan to 'starter' ($7/mo)
+      # 2. Uncomment the 'disk' block below
+      # 3. Set EVIDENCE_UPLOAD_DIR to /data/uploads/evidence
+      # - key: EVIDENCE_UPLOAD_DIR
+      #   value: /data/uploads/evidence
+    # Persistent disk definition (Requires Render Starter plan or above):
+    # disk:
+    #   name: evidence-storage
+    #   mountPath: /data
+    #   sizeGB: 1
 

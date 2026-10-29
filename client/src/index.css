@@ -4,6 +4,56 @@
 
 :root {
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  /* ====================================================================
+     LIGHT THEME DESIGN TOKENS
+     Soft off-white / light grey background, crisp white cards, slate text.
+     ==================================================================== */
+  --bg-primary: #f8fafc;        /* slate-50 background */
+  --bg-secondary: #f1f5f9;      /* slate-100 secondary/section fill */
+  --bg-card: #ffffff;           /* crisp white cards & dialogs */
+  --bg-card-subtle: #f8fafc;    /* slate-50 subtle nested card fill */
+  --bg-card-hover: #f1f5f9;     /* slate-100 hover state */
+  --bg-input: #ffffff;          /* white inputs */
+  --text-primary: #0f172a;      /* slate-900 primary near-black text */
+  --text-secondary: #334155;    /* slate-700 readable secondary text */
+  --text-muted: #64748b;        /* slate-500 muted text */
+  --border-color: #e2e8f0;      /* slate-200 subtle light borders */
+  --border-subtle: #f1f5f9;     /* slate-100 light dividers */
+  --border-hover: #cbd5e1;      /* slate-300 border hover */
+  --accent-blue: #2563eb;       /* blue-600 */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --modal-overlay: rgba(15, 23, 42, 0.45);
+
+  color-scheme: light;
+}
+
+html.dark,
+[data-theme="dark"] {
+  /* ====================================================================
+     DARK THEME DESIGN TOKENS
+     Deep charcoal / slate background, slightly lighter cards, off-white text.
+     ==================================================================== */
+  --bg-primary: #090d16;        /* deep charcoal dark background */
+  --bg-secondary: #0f172a;      /* slate-900 */
+  --bg-card: #0f172a;           /* slate-900 cards & dialogs */
+  --bg-card-subtle: #131c31;    /* slate-900 subtle nested fill */
+  --bg-card-hover: #1e293b;     /* slate-800 hover state */
+  --bg-input: #0f172a;          /* slate-900 inputs */
+  --text-primary: #f8fafc;      /* slate-50 off-white text */
+  --text-secondary: #94a3b8;    /* slate-400 readable secondary text */
+  --text-muted: #64748b;        /* slate-500 muted text */
+  --border-color: #1e293b;      /* slate-800 subtle dark borders */
+  --border-subtle: #1e293b;     /* slate-800 */
+  --border-hover: #334155;      /* slate-700 border hover */
+  --accent-blue: #3b82f6;       /* blue-500 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+  --modal-overlay: rgba(9, 13, 22, 0.8);
+
   color-scheme: dark;
 }
 
@@ -11,25 +61,29 @@
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background-color: #090d16;
-  color: #f1f5f9;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Accessibility Focus Outline */
 :focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--accent-blue);
   outline-offset: 2px;
 }
 
 /* Custom Card & Container Utility Classes */
 .card-surface {
-  background-color: #0f172a;
-  border: 1px solid #1e293b;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
   border-radius: 0.875rem;
+  box-shadow: var(--shadow-sm);
+  color: var(--text-primary);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-surface-hover {
@@ -37,28 +91,152 @@ body {
 }
 
 .card-surface-hover:hover {
-  border-color: #334155;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
 
 /* Institutional Badge Styles */
 .badge-available {
   background-color: rgba(16, 185, 129, 0.12);
-  color: #34d399;
+  color: #059669;
   border: 1px solid rgba(16, 185, 129, 0.25);
+}
+html.dark .badge-available {
+  color: #34d399;
 }
 
 .badge-warning {
   background-color: rgba(245, 158, 11, 0.12);
-  color: #fbbf24;
+  color: #d97706;
   border: 1px solid rgba(245, 158, 11, 0.25);
+}
+html.dark .badge-warning {
+  color: #fbbf24;
 }
 
 .badge-neutral {
+  background-color: rgba(148, 163, 184, 0.15);
+  color: #475569;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+html.dark .badge-neutral {
   background-color: rgba(148, 163, 184, 0.12);
   color: #94a3b8;
   border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+/* Custom Scrollbar for consistent aesthetics */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
+/* ====================================================================
+   LIGHT MODE COMPONENT POLISH
+   Ensures deep readability, high contrast, and polished white surfaces
+   when dark mode is disabled.
+   ==================================================================== */
+html:not(.dark) {
+  /* Surfaces & Containers */
+  .bg-slate-950:not([class*="bg-gradient"]):not([class*="absolute"]):not(span):not(button):not(img) {
+    background-color: var(--bg-primary);
+  }
+
+  .bg-slate-900:not([class*="bg-gradient"]):not([class*="hover:"]):not(span):not(button):not(img) {
+    background-color: var(--bg-card);
+  }
+
+  .bg-slate-900\/90,
+  .bg-slate-900\/80,
+  .bg-slate-900\/70 {
+    background-color: var(--bg-card);
+  }
+
+  .bg-slate-900\/60,
+  .bg-slate-900\/50,
+  .bg-slate-900\/40,
+  .bg-slate-900\/30 {
+    background-color: var(--bg-secondary);
+  }
+
+  /* Borders & Dividers */
+  .border-slate-900,
+  .border-slate-800,
+  .border-slate-800\/80,
+  .border-slate-800\/60,
+  .border-slate-800\/50,
+  .border-slate-700,
+  .border-slate-700\/80,
+  .border-slate-700\/60 {
+    border-color: var(--border-color);
+  }
+
+  .divide-slate-800 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-800\/80 > :not([hidden]) ~ :not([hidden]),
+  .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--border-color);
+  }
+
+  /* Form Controls */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([class*="text-white"]),
+  textarea:not([class*="text-white"]),
+  select {
+    background-color: var(--bg-input) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--text-muted) !important;
+  }
+
+  /* Headings & Prominent Text */
+  h1:not([class*="bg-"]):not([class*="gradient"]),
+  h2:not([class*="bg-"]):not([class*="gradient"]),
+  h3:not([class*="bg-"]):not([class*="gradient"]),
+  h4:not([class*="bg-"]):not([class*="gradient"]) {
+    color: var(--text-primary);
+  }
+
+  /* Selective body text adjustment for high readability */
+  .text-white:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-amber"]):not([class*="bg-indigo"]):not(.gradient-text) {
+    color: var(--text-primary);
+  }
+
+  .text-slate-300:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]):not([class*="bg-purple"]):not([class*="bg-rose"]) {
+    color: #1e293b;
+  }
+
+  .text-slate-400:not(button):not(button *):not([class*="bg-blue"]):not([class*="bg-emerald"]) {
+    color: #475569;
+  }
+
+  .text-slate-500 {
+    color: #64748b;
+  }
+
+  /* Tables */
+  thead th {
+    background-color: #f1f5f9;
+    color: #334155;
+    border-color: #e2e8f0;
+  }
+
+  tbody tr:hover {
+    background-color: #f8fafc;
+  }
 }
 
 /* Respect Prefers Reduced Motion */

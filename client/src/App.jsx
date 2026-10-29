@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import MainLayout from './layouts/MainLayout';
@@ -22,9 +23,10 @@ import NotFoundPage from './pages/NotFoundPage';
  */
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <BrowserRouter>
+    <ThemeProvider>
+      <AuthProvider>
+        <NotificationProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/" element={<MainLayout />}>
               <Route index element={<HomePage />} />
@@ -96,6 +98,7 @@ function App() {
         </BrowserRouter>
       </NotificationProvider>
     </AuthProvider>
+  </ThemeProvider>
   );
 }
 

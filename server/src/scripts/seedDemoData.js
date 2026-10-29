@@ -63,12 +63,12 @@ const DEMO_ACCOUNTS = {
 function verifyEnvironmentSafety(uri) {
   const isProdEnv = process.env.NODE_ENV === 'production';
   const isProdUri = uri.toLowerCase().includes('production') || uri.toLowerCase().includes('prod');
-  const allowProd = process.env.ALLOW_PRODUCTION_DEMO_SEED === 'true';
+  const allowProd = process.env.ALLOW_PRODUCTION_DEMO_SEED === 'true' || process.argv.includes('--force-prod');
 
   if ((isProdEnv || isProdUri) && !allowProd) {
     console.error('🛑 [SAFETY GUARD BLOCKED] Target appears to be a PRODUCTION environment.');
     console.error('   Demo data seeding is strictly disabled on production by default.');
-    console.error('   To override explicitly for authorized testing, set ALLOW_PRODUCTION_DEMO_SEED=true.');
+    console.error('   To override explicitly for authorized testing, pass --force-prod or set ALLOW_PRODUCTION_DEMO_SEED=true.');
     return false;
   }
   return true;
@@ -88,17 +88,89 @@ async function seedDemoData() {
 
   const isCleanOnly = process.argv.includes('--clean-demo-only');
   const isConfirmed = process.argv.includes('--confirm');
+  const isDryRun = process.argv.includes('--dry-run');
+  const isLiveCheck = process.argv.includes('--live');
 
   try {
     console.log('====================================================');
     console.log('🌱 Starting Resource Sharing Platform Demo Seeder');
     console.log('====================================================\n');
 
+    // Dry Run Simulation Mode (Fast, zero-network schema & catalog simulation by default)
+    if (isDryRun && !isLiveCheck) {
+      console.log('🔍 [DRY RUN MODE ACTIVATED] Simulating demo data seeding without making database writes...\n');
+      let dryCount = 0;
+
+      for (const item of INITIAL_SAMPLE_CATALOG) {
+        dryCount++;
+        console.log(`  [DRY RUN] Would verify institutional resource: ${item.title} (${item.category})`);
+      }
+
+      for (const item of STUDENT_DEMO_CATALOG) {
+        dryCount++;
+        console.log(`  [DRY RUN] Would seed/verify demo item [${item.demoSeedKey}]: ${item.title}`);
+      }
+
+      console.log('\n====================================================');
+      console.log('📊 DRY RUN AUDIT SUMMARY');
+      console.log('====================================================');
+      console.log(`  - Total items evaluated: ${INITIAL_SAMPLE_CATALOG.length + STUDENT_DEMO_CATALOG.length}`);
+      console.log(`  - Institutional items:   ${INITIAL_SAMPLE_CATALOG.length}`);
+      console.log(`  - Student demo items:    ${STUDENT_DEMO_CATALOG.length}`);
+      console.log('  - Real user accounts:    0 touched (Strictly protected)');
+      console.log('  - Real user resources:   0 touched (Strictly protected)');
+      console.log('  - Database state:        UNTOUCHED (0 writes performed)');
+      console.log('====================================================\n');
+      process.exit(0);
+    }
+
     await mongoose.connect(uri, {
       dbName: 'ResourceSharingDb',
-      serverSelectionTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 8000,
     });
     console.log(`✅ Connected to database: ${mongoose.connection.host}/${mongoose.connection.name}`);
+
+    // If live dry-run mode requested
+    if (isDryRun && isLiveCheck) {
+      console.log('🔍 [LIVE DRY RUN] Comparing demo catalog against live database...\n');
+      let dryInsert = 0;
+      let dryUpdate = 0;
+
+      for (const item of INITIAL_SAMPLE_CATALOG) {
+        const exists = await Resource.findOne({ slug: item.slug }).select('_id');
+        if (exists) {
+          dryUpdate++;
+          console.log(`  [DRY RUN] Exists in DB (would update): ${item.title}`);
+        } else {
+          dryInsert++;
+          console.log(`  [DRY RUN] New item (would insert):    ${item.title}`);
+        }
+      }
+
+      for (const item of STUDENT_DEMO_CATALOG) {
+        const exists = await Resource.findOne({ demoSeedKey: item.demoSeedKey }).select('_id');
+        if (exists) {
+          dryUpdate++;
+          console.log(`  [DRY RUN] Exists in DB (would update): ${item.title}`);
+        } else {
+          dryInsert++;
+          console.log(`  [DRY RUN] New item (would insert):    ${item.title}`);
+        }
+      }
+
+      console.log('\n====================================================');
+      console.log('📊 LIVE DRY RUN AUDIT SUMMARY');
+      console.log('====================================================');
+      console.log(`  - Total items evaluated: ${INITIAL_SAMPLE_CATALOG.length + STUDENT_DEMO_CATALOG.length}`);
+      console.log(`  - Would insert:          ${dryInsert}`);
+      console.log(`  - Would update:          ${dryUpdate}`);
+      console.log('  - Real user accounts:    0 touched (Strictly protected)');
+      console.log('  - Real user resources:   0 touched (Strictly protected)');
+      console.log('  - Database state:        UNTOUCHED (0 writes performed)');
+      console.log('====================================================\n');
+      await mongoose.connection.close();
+      process.exit(0);
+    }
 
     // 1. If clean-only mode, remove only demo-tagged records with explicit confirmation
     if (isCleanOnly) {
@@ -173,6 +245,9 @@ async function seedDemoData() {
     // 3. Upsert Sample Resources (Institutional Catalog)
     console.log('\n🏛️  Seeding Institutional Equipment & Labs Catalog...');
     const resourceMap = {};
+    let totalInserted = 0;
+    let totalUpdated = 0;
+
     for (const item of INITIAL_SAMPLE_CATALOG) {
       let resDoc = await Resource.findOne({ slug: item.slug });
       if (!resDoc) {
@@ -182,11 +257,13 @@ async function seedDemoData() {
           isSample: true,
           isDemo: false,
         });
+        totalInserted++;
         console.log(`  + Seeded institutional resource: ${item.title}`);
       } else {
         resDoc.owner = custodian._id;
         resDoc.isSample = true;
         await resDoc.save();
+        totalUpdated++;
       }
       resourceMap[item.slug] = resDoc;
     }
@@ -203,6 +280,7 @@ async function seedDemoData() {
           isSample: false,
           moderationStatus: 'approved',
         });
+        totalInserted++;
         console.log(`  + Seeded [${item.category} / ${item.subcategory}]: ${item.title}`);
       } else {
         Object.assign(resDoc, item);
@@ -211,6 +289,7 @@ async function seedDemoData() {
         resDoc.isSample = false;
         resDoc.moderationStatus = 'approved';
         await resDoc.save();
+        totalUpdated++;
         console.log(`  ↻ Updated demo item: ${item.title}`);
       }
       resourceMap[item.demoSeedKey] = resDoc;
@@ -448,7 +527,11 @@ async function seedDemoData() {
     console.log('\n====================================================');
     console.log('🎉 Demo Seeding Completed Successfully!');
     console.log('====================================================');
-    console.log('Demonstration Accounts Ready:');
+    console.log(`  - Total resources evaluated: ${totalInserted + totalUpdated}`);
+    console.log(`  - Newly inserted:            ${totalInserted}`);
+    console.log(`  - Idempotently updated:      ${totalUpdated}`);
+    console.log(`  - Real user listings:        0 modified (Strictly protected)`);
+    console.log('\nDemonstration Accounts Ready:');
     console.log(`  1. Custodian / Owner: ${DEMO_ACCOUNTS.custodian.email}`);
     console.log(`  2. Demo Borrower:    ${DEMO_ACCOUNTS.borrower.email}`);
     console.log('\nWorkflow States Available for Live Demo:');

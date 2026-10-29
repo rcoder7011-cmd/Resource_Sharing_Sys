@@ -29,8 +29,11 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
     academicMetadata: {
       subject: '',
       branch: '',
+      department: '',
       course: '',
       semester: '',
+      academicYear: '',
+      classLevel: '',
       bookTitle: '',
       author: '',
       edition: '',
@@ -67,8 +70,11 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
         academicMetadata: {
           subject: resource.academicMetadata?.subject || '',
           branch: resource.academicMetadata?.branch || '',
+          department: resource.academicMetadata?.department || '',
           course: resource.academicMetadata?.course || '',
           semester: resource.academicMetadata?.semester || '',
+          academicYear: resource.academicMetadata?.academicYear || '',
+          classLevel: resource.academicMetadata?.classLevel || resource.academicMetadata?.class || '',
           bookTitle: resource.academicMetadata?.bookTitle || '',
           author: resource.academicMetadata?.author || '',
           edition: resource.academicMetadata?.edition || '',
@@ -241,53 +247,75 @@ export default function EditResourceModal({ resource, isOpen, onClose, onSuccess
         </div>
 
         {showAcademicFields && (
-          <div className="p-3.5 rounded-xl bg-slate-950/80 border border-blue-900/40 space-y-2.5">
-            <span className="block text-xs font-bold uppercase tracking-wider text-blue-400">
+          <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-slate-950/80 border border-blue-200 dark:border-blue-900/40 space-y-2.5">
+            <span className="block text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
               Academic & Book Details (Optional)
             </span>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Subject</label>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Subject</label>
                 <input
                   type="text"
                   name="subject"
                   value={formData.academicMetadata.subject}
                   onChange={handleAcademicChange}
                   placeholder="e.g. Mathematics"
-                  className="w-full px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs text-white"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Branch</label>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Branch</label>
                 <input
                   type="text"
                   name="branch"
                   value={formData.academicMetadata.branch}
                   onChange={handleAcademicChange}
                   placeholder="e.g. CSE / Mechanical"
-                  className="w-full px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs text-white"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Author</label>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Book / Material Title</label>
+                <input
+                  type="text"
+                  name="bookTitle"
+                  value={formData.academicMetadata.bookTitle}
+                  onChange={handleAcademicChange}
+                  placeholder="e.g. Higher Engineering Math"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Author</label>
                 <input
                   type="text"
                   name="author"
                   value={formData.academicMetadata.author}
                   onChange={handleAcademicChange}
                   placeholder="e.g. Dr. B.S. Grewal"
-                  className="w-full px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs text-white"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Edition / Semester</label>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Edition</label>
                 <input
                   type="text"
                   name="edition"
                   value={formData.academicMetadata.edition}
                   onChange={handleAcademicChange}
                   placeholder="e.g. 44th Edition"
-                  className="w-full px-2.5 py-1.5 rounded bg-slate-900 border border-slate-800 text-xs text-white"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-0.5">Class / Semester</label>
+                <input
+                  type="text"
+                  name="classLevel"
+                  value={formData.academicMetadata.classLevel}
+                  onChange={handleAcademicChange}
+                  placeholder="e.g. 2nd Year / Sem 3"
+                  className="w-full px-2.5 py-1.5 rounded bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                 />
               </div>
             </div>

@@ -44,8 +44,10 @@ async function main() {
     await runScript('matchingTest.js');
     await runScript('chatTest.js');
     await runScript('availabilityTest.js');
+    await runScript('concurrentBookingTest.js');
     await runScript('studentResourcesTest.js');
-    console.log('\n🎉 ALL PART 3 THROUGH PART 18 + AVAILABILITY & STUDENT RESOURCE SUITES PASSED SUCCESSFULLY!');
+    await runScript('themeTest.js');
+    console.log('\n🎉 ALL PART 3 THROUGH PART 19 + AVAILABILITY, CONCURRENCY & THEME SYSTEM SUITES PASSED SUCCESSFULLY!');
   } catch (err) {
     console.error('\n❌ Test run failed:', err.message);
     process.exit(1);

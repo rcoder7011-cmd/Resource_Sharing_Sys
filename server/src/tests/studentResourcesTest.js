@@ -20,6 +20,8 @@ const Booking = require('../models/Booking');
 const {
   CATEGORY_REGISTRY,
   ALL_CATEGORIES,
+  CATEGORY_ALIASES,
+  normalizeCategory,
   isValidCategory,
   getSubcategoriesForCategory,
   categorySupportsAcademicFields,
@@ -61,27 +63,37 @@ async function runStudentResourcesTestSuite() {
     assert.strictEqual(isValidCategory('Student Essentials'), true);
     assert.strictEqual(isValidCategory('Books & Study Materials'), true);
     assert.strictEqual(isValidCategory('Design, Drawing & Architecture'), true);
+    assert.strictEqual(isValidCategory('Engineering Drawing & Design'), true); // Alias support
+    assert.strictEqual(normalizeCategory('Engineering Drawing & Design'), 'Design, Drawing & Architecture');
     assert.strictEqual(isValidCategory('Gadgets & Accessories'), true);
     assert.strictEqual(isValidCategory('Laboratories'), true); // Preserved
     assert.strictEqual(isValidCategory('NonExistentCategory123'), false);
-    pass('All new student categories and preserved institutional categories validate correctly');
+    pass('All new student categories, aliases, and preserved institutional categories validate correctly');
 
     const essentialSubs = getSubcategoriesForCategory('Student Essentials');
     assert.ok(essentialSubs.includes('Calculators'));
     assert.ok(essentialSubs.includes('Water Bottles'));
     assert.ok(essentialSubs.includes('Bags & Backpacks'));
-    pass('Student Essentials subcategories registry contains expected items');
+    assert.ok(essentialSubs.includes('Pens, Pencils & Stationery'));
+    pass('Student Essentials subcategories registry contains expected items including Pens, Pencils & Stationery');
 
     const bookSubs = getSubcategoriesForCategory('Books & Study Materials');
     assert.ok(bookSubs.includes('Engineering Textbooks'));
     assert.ok(bookSubs.includes('Subject-Wise Handwritten Notes'));
     assert.ok(bookSubs.includes('Lab Manuals'));
-    pass('Books & Study Materials subcategories registry contains expected items');
+    assert.ok(bookSubs.includes('Subject-Specific Books'));
+    pass('Books & Study Materials subcategories registry contains expected items including Subject-Specific Books');
 
     const designSubs = getSubcategoriesForCategory('Design, Drawing & Architecture');
     assert.ok(designSubs.includes('Drafters and Drafting Tools'));
     assert.ok(designSubs.includes('Engineering Drawing Instruments'));
+    assert.ok(designSubs.includes('Geometry Boxes'));
     pass('Design, Drawing & Architecture subcategories registry contains expected items');
+
+    const gadgetSubs = getSubcategoriesForCategory('Gadgets & Accessories');
+    assert.ok(gadgetSubs.includes('Keyboards & Mice'));
+    assert.ok(gadgetSubs.includes('Headphones & Earphones'));
+    pass('Gadgets & Accessories subcategories registry contains Keyboards & Mice and Headphones & Earphones');
 
     assert.strictEqual(categorySupportsAcademicFields('Books & Study Materials'), true);
     assert.strictEqual(categorySupportsAcademicFields('Design, Drawing & Architecture'), true);
@@ -103,12 +115,20 @@ async function runStudentResourcesTestSuite() {
       academicMetadata: {
         subject: 'Engineering Mathematics',
         branch: 'Computer Science & Engineering (CSE)',
+        department: 'School of Computer Engineering',
         course: 'B.Tech',
         semester: '1st Semester (Year 1)',
+        academicYear: '2025-2026',
+        classLevel: '1st Year',
         bookTitle: 'Higher Engineering Mathematics',
         author: 'Dr. B.S. Grewal',
         edition: '44th Edition',
         isbn: '978-8193328491',
+      },
+      location: {
+        campus: 'Main Academic Campus',
+        building: 'Central Library',
+        room: 'Reserve Stack 1',
       },
       quantity: 3,
       condition: 'good',
@@ -119,7 +139,12 @@ async function runStudentResourcesTestSuite() {
     assert.strictEqual(bookErr, undefined);
     assert.strictEqual(bookDoc.academicMetadata.author, 'Dr. B.S. Grewal');
     assert.strictEqual(bookDoc.academicMetadata.branch, 'Computer Science & Engineering (CSE)');
-    pass('Resource with complete academic metadata passes Mongoose schema validation');
+    assert.strictEqual(bookDoc.academicMetadata.department, 'School of Computer Engineering');
+    assert.strictEqual(bookDoc.academicMetadata.academicYear, '2025-2026');
+    assert.strictEqual(bookDoc.academicMetadata.classLevel, '1st Year');
+    assert.strictEqual(bookDoc.academicMetadata.class, '1st Year'); // Virtual alias
+    assert.strictEqual(bookDoc.generalLocation, 'Main Academic Campus'); // Virtual location
+    pass('Resource with complete extended academic metadata and virtuals passes validation');
 
     // 2.2 Valid Student Essential without academic metadata
     const bottleDoc = new Resource({

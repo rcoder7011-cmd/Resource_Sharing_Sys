@@ -8,8 +8,17 @@ const {
 } = require('../services/availabilityService');
 const {
   isValidCategory,
+  normalizeCategory,
   ALL_CATEGORIES,
 } = require('../config/categories');
+
+/**
+ * Sanitize regex special characters to prevent NoSQL regex injection
+ */
+const escapeRegex = (text) => {
+  if (!text || typeof text !== 'string') return '';
+  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+};
 
 /**
  * Check MongoDB connection status
@@ -51,11 +60,15 @@ const getAllResources = async (req, res, next) => {
       department,
       semester,
       year,
+      academicYear,
+      classLevel,
       subject,
       location,
       campus,
+      generalLocation,
       availability,
       status,
+      condition,
       resourceType,
       startDate,
       endDate,
@@ -69,26 +82,35 @@ const getAllResources = async (req, res, next) => {
       moderationStatus: { $ne: 'hidden' },
     };
 
-    // 1. Full-text search (title, description, category, subcategory, institution, academic fields)
+    // 1. Full-text search (title, description, category, subcategory, location, academic fields)
     const searchTerm = (search || q || '').trim();
     if (searchTerm) {
+      const escaped = escapeRegex(searchTerm);
       query.$or = [
-        { title: { $regex: searchTerm, $options: 'i' } },
-        { description: { $regex: searchTerm, $options: 'i' } },
-        { category: { $regex: searchTerm, $options: 'i' } },
-        { subcategory: { $regex: searchTerm, $options: 'i' } },
-        { institution: { $regex: searchTerm, $options: 'i' } },
-        { 'academicMetadata.subject': { $regex: searchTerm, $options: 'i' } },
-        { 'academicMetadata.branch': { $regex: searchTerm, $options: 'i' } },
-        { 'academicMetadata.course': { $regex: searchTerm, $options: 'i' } },
-        { 'academicMetadata.bookTitle': { $regex: searchTerm, $options: 'i' } },
-        { 'academicMetadata.author': { $regex: searchTerm, $options: 'i' } },
+        { title: { $regex: escaped, $options: 'i' } },
+        { description: { $regex: escaped, $options: 'i' } },
+        { category: { $regex: escaped, $options: 'i' } },
+        { subcategory: { $regex: escaped, $options: 'i' } },
+        { institution: { $regex: escaped, $options: 'i' } },
+        { 'location.campus': { $regex: escaped, $options: 'i' } },
+        { 'location.building': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.subject': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.branch': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.department': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.course': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.semester': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.academicYear': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.classLevel': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.bookTitle': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.author': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.edition': { $regex: escaped, $options: 'i' } },
+        { 'academicMetadata.isbn': { $regex: escaped, $options: 'i' } },
       ];
     }
 
     // 2. Category filter
     if (category && category !== 'All Categories') {
-      query.category = category;
+      query.category = normalizeCategory(category);
     }
 
     // 2.1 Subcategory filter
@@ -99,27 +121,37 @@ const getAllResources = async (req, res, next) => {
     // 2.2 Academic Branch / Department filter
     const branchTerm = (branch || department || '').trim();
     if (branchTerm && branchTerm !== 'All Branches') {
-      query['academicMetadata.branch'] = { $regex: branchTerm, $options: 'i' };
+      query['academicMetadata.branch'] = { $regex: escapeRegex(branchTerm), $options: 'i' };
     }
 
     // 2.3 Academic Semester / Year filter
-    const semesterTerm = (semester || year || '').trim();
+    const semesterTerm = (semester || year || academicYear || '').trim();
     if (semesterTerm && semesterTerm !== 'All Semesters') {
-      query['academicMetadata.semester'] = { $regex: semesterTerm, $options: 'i' };
+      query['academicMetadata.semester'] = { $regex: escapeRegex(semesterTerm), $options: 'i' };
     }
 
-    // 2.4 Subject filter
+    // 2.4 Academic Class Level filter
+    if (classLevel && classLevel.trim()) {
+      query['academicMetadata.classLevel'] = { $regex: escapeRegex(classLevel.trim()), $options: 'i' };
+    }
+
+    // 2.5 Subject filter
     if (subject && subject.trim()) {
-      query['academicMetadata.subject'] = { $regex: subject.trim(), $options: 'i' };
+      query['academicMetadata.subject'] = { $regex: escapeRegex(subject.trim()), $options: 'i' };
     }
 
     // 3. Location / Campus filter
-    const campusTerm = (location || campus || '').trim();
+    const campusTerm = (location || campus || generalLocation || '').trim();
     if (campusTerm && campusTerm !== 'All Campuses') {
       query['location.campus'] = campusTerm;
     }
 
-    // 4. Availability Status filter
+    // 4. Condition filter
+    if (condition && ['new', 'good', 'fair', 'needs repair'].includes(condition)) {
+      query.condition = condition;
+    }
+
+    // 5. Availability Status filter
     const availTerm = (availability || status || '').trim();
     if (availTerm && availTerm !== 'All Statuses') {
       // Map frontend label to schema enum if needed
@@ -412,7 +444,8 @@ const createResource = async (req, res, next) => {
       });
     }
 
-    if (!isValidCategory(category)) {
+    const canonicalCategory = normalizeCategory(category);
+    if (!isValidCategory(canonicalCategory)) {
       return res.status(400).json({
         success: false,
         message: `${category} is not a supported category`,
@@ -426,8 +459,11 @@ const createResource = async (req, res, next) => {
       parsedAcademicMetadata = {
         subject: typeof academicMetadata.subject === 'string' ? academicMetadata.subject.trim().substring(0, 100) : '',
         branch: typeof academicMetadata.branch === 'string' ? academicMetadata.branch.trim().substring(0, 100) : '',
+        department: typeof academicMetadata.department === 'string' ? academicMetadata.department.trim().substring(0, 100) : '',
         course: typeof academicMetadata.course === 'string' ? academicMetadata.course.trim().substring(0, 100) : '',
         semester: typeof academicMetadata.semester === 'string' ? academicMetadata.semester.trim().substring(0, 50) : '',
+        academicYear: typeof academicMetadata.academicYear === 'string' ? academicMetadata.academicYear.trim().substring(0, 50) : '',
+        classLevel: typeof academicMetadata.classLevel === 'string' ? academicMetadata.classLevel.trim().substring(0, 50) : (typeof academicMetadata.class === 'string' ? academicMetadata.class.trim().substring(0, 50) : ''),
         bookTitle: typeof academicMetadata.bookTitle === 'string' ? academicMetadata.bookTitle.trim().substring(0, 200) : '',
         author: typeof academicMetadata.author === 'string' ? academicMetadata.author.trim().substring(0, 150) : '',
         edition: typeof academicMetadata.edition === 'string' ? academicMetadata.edition.trim().substring(0, 50) : '',
@@ -436,19 +472,20 @@ const createResource = async (req, res, next) => {
     }
 
     // Normalize location
+    const locationInput = req.body.generalLocation || location;
     let parsedLocation = {
       campus: 'Main Academic Campus',
       building: 'Main Facility',
       room: 'General Access',
     };
 
-    if (typeof location === 'string' && location.trim()) {
-      parsedLocation.campus = location.trim();
-    } else if (typeof location === 'object' && location !== null) {
+    if (typeof locationInput === 'string' && locationInput.trim()) {
+      parsedLocation.campus = locationInput.trim();
+    } else if (typeof locationInput === 'object' && locationInput !== null) {
       parsedLocation = {
-        campus: (location.campus || 'Main Academic Campus').trim(),
-        building: (location.building || 'Main Facility').trim(),
-        room: (location.room || 'General Access').trim(),
+        campus: (locationInput.campus || 'Main Academic Campus').trim(),
+        building: (locationInput.building || 'Main Facility').trim(),
+        room: (locationInput.room || 'General Access').trim(),
       };
     }
 
@@ -487,7 +524,7 @@ const createResource = async (req, res, next) => {
     const newResource = await Resource.create({
       title: resourceTitle,
       description: description.trim(),
-      category: category.trim(),
+      category: canonicalCategory,
       subcategory: parsedSubcategory,
       academicMetadata: parsedAcademicMetadata,
       resourceType: resourceType === 'space' ? 'space' : 'equipment',
@@ -586,11 +623,14 @@ const updateResource = async (req, res, next) => {
     delete updates.isDemo;
     delete updates.demoSeedKey;
 
-    if (updates.category && !isValidCategory(updates.category)) {
-      return res.status(400).json({
-        success: false,
-        message: `${updates.category} is not a supported category`,
-      });
+    if (updates.category) {
+      updates.category = normalizeCategory(updates.category);
+      if (!isValidCategory(updates.category)) {
+        return res.status(400).json({
+          success: false,
+          message: `${updates.category} is not a supported category`,
+        });
+      }
     }
 
     if (updates.subcategory !== undefined) {
@@ -599,11 +639,22 @@ const updateResource = async (req, res, next) => {
 
     if (updates.academicMetadata && typeof updates.academicMetadata === 'object') {
       const existingAcademic = resource.academicMetadata?.toObject ? resource.academicMetadata.toObject() : (resource.academicMetadata || {});
+      const acad = updates.academicMetadata;
       updates.academicMetadata = {
         ...existingAcademic,
-        ...updates.academicMetadata,
+        ...acad,
+        classLevel: acad.classLevel !== undefined ? acad.classLevel : (acad.class !== undefined ? acad.class : existingAcademic.classLevel),
       };
     }
+
+    if (updates.generalLocation && !updates.location) {
+      updates.location = {
+        campus: String(updates.generalLocation).trim(),
+        building: resource.location?.building || 'Main Facility',
+        room: resource.location?.room || 'General Access',
+      };
+    }
+    delete updates.generalLocation;
 
     // Handle name alias if provided
     if (updates.name && !updates.title) {

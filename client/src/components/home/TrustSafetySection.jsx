@@ -45,21 +45,21 @@ export default function TrustSafetySection() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
         {/* Left Column: Heading & Context */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
             <ShieldCheck className="w-3.5 h-3.5" />
             <span>Trust & Governance Framework</span>
           </div>
 
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight transition-colors">
             Built for High-Value, Sensitive Institutional Assets.
           </h2>
 
-          <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+          <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed transition-colors">
             Resource sharing only works when asset owners trust the system. ShareCore replaces informal, ad-hoc equipment loans with enforceable institutional safeguards.
           </p>
 
-          <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-400 space-y-2">
-            <p className="font-semibold text-slate-200">
+          <div className="p-4 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 space-y-2 transition-colors">
+            <p className="font-semibold text-slate-900 dark:text-slate-200">
               Institutional Accountability Statement:
             </p>
             <p className="leading-relaxed">
@@ -75,16 +75,16 @@ export default function TrustSafetySection() {
             return (
               <div
                 key={idx}
-                className="card-surface p-5 rounded-xl border border-slate-800/80 hover:border-slate-700 transition-colors flex items-start gap-4"
+                className="card-surface p-5 rounded-xl border border-slate-200 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-colors flex items-start gap-4"
               >
-                <div className="p-2.5 rounded-xl bg-slate-800 border border-slate-700 shrink-0 text-blue-400">
+                <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shrink-0 text-blue-600 dark:text-blue-400">
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-sm font-semibold text-white tracking-tight">
+                  <h3 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight transition-colors">
                     {pillar.title}
                   </h3>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed transition-colors">
                     {pillar.description}
                   </p>
                 </div>
