@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Local Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+
+# Uploaded evidence and runtime assets
+uploads/
+
+

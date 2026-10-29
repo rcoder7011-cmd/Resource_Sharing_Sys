@@ -1,0 +1,26 @@
+services:
+  # Backend Web Service on Render
+  - type: web
+    name: resource-sharing-platform-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        sync: false # Set in Render dashboard to your Vercel deployment URL (e.g. https://your-app.vercel.app)
+      - key: MONGODB_URI
+        sync: false # Set in Render dashboard securely with MongoDB Atlas connection string
+      - key: JWT_SECRET
+        generateValue: true # Render automatically generates a cryptographically secure 256-bit string
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: ENABLE_CUSTOM_DNS
+        value: "false" # Disabled in production Linux container to respect platform DNS
+
